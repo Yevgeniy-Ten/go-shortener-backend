@@ -3,17 +3,31 @@ package handlers
 import (
 	"io"
 	"net/http"
+	"shorter/internal/app/lib"
 	"shorter/internal/app/storage"
 )
 
 func PostHandler(res http.ResponseWriter, req *http.Request) {
+	//text-plain
+	if req.Header.Get("Content-Type") != "text/plain" {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte("Некорректный Content-Type."))
+		return
+	}
+
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte("Ошибка чтения тела запроса."))
 		return
 	}
-	id := storage.GlobalUrlStorage.Save(string(body))
+	url := string(body)
+	if !lib.ValidateUrl(url) {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte("Некорректный URL."))
+		return
+	}
+	id := storage.GlobalUrlStorage.Save(string(url))
 	respText := "http://localhost:8080/" + id
 	res.WriteHeader(http.StatusCreated)
 	res.Write([]byte(respText))

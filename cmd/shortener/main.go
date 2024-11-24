@@ -6,10 +6,6 @@ import (
 	handlers "shorter/internal/app/handlers"
 )
 
-func mainPage(res http.ResponseWriter, req *http.Request) {
-	res.Write([]byte("Привет!"))
-}
-
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handlers.URLHandler)

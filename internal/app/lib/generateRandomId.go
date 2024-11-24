@@ -1,4 +1,4 @@
-package generateRandomId
+package lib
 
 import (
 	"math/rand"
