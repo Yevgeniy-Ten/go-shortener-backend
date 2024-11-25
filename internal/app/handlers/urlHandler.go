@@ -10,7 +10,7 @@ import (
 
 func PostHandler(res http.ResponseWriter, req *http.Request) {
 	contentType := req.Header.Get("Content-Type")
-
+	//как получить как массив
 	if !strings.Contains(contentType, "text/plain") {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte("Некорректный Content-Type."))
