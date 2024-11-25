@@ -29,7 +29,7 @@ func PostHandler(res http.ResponseWriter, req *http.Request) {
 		res.Write([]byte("Некорректный URL."))
 		return
 	}
-	id := storage.GlobalURLStorage.Save(string(url))
+	id := storage.GlobalURLStorage.Save(url)
 	respText := "http://localhost:8080/" + id
 	res.WriteHeader(http.StatusCreated)
 	res.Write([]byte(respText))
