@@ -22,19 +22,19 @@ func PostHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	url := string(body)
-	if !lib.ValidateUrl(url) {
+	if !lib.ValidateURL(url) {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte("Некорректный URL."))
 		return
 	}
-	id := storage.GlobalUrlStorage.Save(string(url))
+	id := storage.GlobalURLStorage.Save(string(url))
 	respText := "http://localhost:8080/" + id
 	res.WriteHeader(http.StatusCreated)
 	res.Write([]byte(respText))
 }
 func GetHandler(res http.ResponseWriter, req *http.Request) {
 	id := req.URL.Path[1:]
-	url := storage.GlobalUrlStorage.GetUrl(id)
+	url := storage.GlobalURLStorage.GetURL(id)
 	if url == "" {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte("Ссылка не найдена."))
