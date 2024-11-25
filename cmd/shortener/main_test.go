@@ -29,9 +29,7 @@ func TestUrlHandler(t *testing.T) {
 		{"Wrong Url", value{"htt://practicum.yandex.ru", "text/plain"}, statusCodeCheck{400}},
 	}
 
-	var createURL func(string, string) *http.Response
-
-	createURL = func(value, contentType string) *http.Response {
+	var createURL = func(value, contentType string) *http.Response {
 		request := httptest.NewRequest("POST", "/", strings.NewReader(value))
 		request.Header.Set("Content-Type", contentType)
 		recorder := httptest.NewRecorder()
