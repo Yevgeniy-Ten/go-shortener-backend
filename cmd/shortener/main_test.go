@@ -29,9 +29,9 @@ func TestUrlHandler(t *testing.T) {
 		{"Wrong Url", value{"htt://practicum.yandex.ru", "text/plain"}, statusCodeCheck{400}},
 	}
 
-	var createUrl func(string, string) *http.Response
+	var createURL func(string, string) *http.Response
 
-	createUrl = func(value, contentType string) *http.Response {
+	createURL = func(value, contentType string) *http.Response {
 		request := httptest.NewRequest("POST", "/", strings.NewReader(value))
 		request.Header.Set("Content-Type", contentType)
 		recorder := httptest.NewRecorder()
@@ -42,7 +42,7 @@ func TestUrlHandler(t *testing.T) {
 
 	for _, tt := range createTests { // перебираем все тесты
 		t.Run(tt.name, func(t *testing.T) { // запускаем тест
-			result := createUrl(tt.value.value, tt.value.contentType)
+			result := createURL(tt.value.value, tt.value.contentType)
 			assert.Equal(t, tt.want.statusCode, result.StatusCode)
 		})
 	}
@@ -61,10 +61,12 @@ func TestUrlHandler(t *testing.T) {
 	}
 	for _, tt := range redirectTests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := createUrl(tt.value.value, tt.value.contentType)
+			result := createURL(tt.value.value, tt.value.contentType)
 			body, err := io.ReadAll(result.Body)
 			require.NoError(t, err)
 			request := httptest.NewRequest("GET", string(body), nil)
+			err = result.Body.Close()
+			require.NoError(t, err)
 			recorder := httptest.NewRecorder()
 			handlers.URLHandler(recorder, request)
 			result = recorder.Result()
