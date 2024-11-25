@@ -2,24 +2,24 @@ package storage
 
 import generateRandomId "shorter/internal/app/lib"
 
-type ShortUrlStorage struct {
+type ShortURLStorage struct {
 	storage map[string]string
 }
 
-func NewShortUrlStorage() *ShortUrlStorage {
-	return &ShortUrlStorage{
+func NewShortURLStorage() *ShortURLStorage {
+	return &ShortURLStorage{
 		storage: make(map[string]string),
 	}
 }
 
-func (storage *ShortUrlStorage) Save(url string) string {
-	newId := generateRandomId.GenerateShortId()
-	storage.storage[newId] = url
-	return newId
+func (storage *ShortURLStorage) Save(url string) string {
+	newID := generateRandomId.GenerateShortID()
+	storage.storage[newID] = url
+	return newID
 }
 
-func (storage *ShortUrlStorage) GetUrl(id string) string {
+func (storage *ShortURLStorage) GetURL(id string) string {
 	return storage.storage[id]
 }
 
-var GlobalUrlStorage = NewShortUrlStorage()
+var GlobalURLStorage = NewShortURLStorage()
