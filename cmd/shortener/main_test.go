@@ -4,7 +4,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"shorter/internal/app/handlers"
@@ -43,7 +42,7 @@ func TestUrlHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) { // запускаем тест
 			result := createURL(tt.value.value, tt.value.contentType)
 			assert.Equal(t, tt.want.statusCode, result.StatusCode)
-			log.Fatal(result.Body.Close())
+			defer result.Body.Close()
 		})
 	}
 
@@ -72,7 +71,7 @@ func TestUrlHandler(t *testing.T) {
 			result = recorder.Result()
 			assert.Equal(t, tt.want.statusCode, result.StatusCode)
 			assert.Equal(t, tt.want.location, result.Header.Get("Location"))
-			log.Fatal(result.Body.Close())
+			defer result.Body.Close()
 		})
 	}
 
