@@ -5,11 +5,13 @@ import (
 	"net/http"
 	"shorter/internal/app/lib"
 	"shorter/internal/app/storage"
+	"strings"
 )
 
 func PostHandler(res http.ResponseWriter, req *http.Request) {
-	//text-plain
-	if req.Header.Get("Content-Type") != "text/plain" {
+	contentType := req.Header.Get("Content-Type")
+
+	if !strings.Contains(contentType, "text/plain") {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte("Некорректный Content-Type."))
 		return
