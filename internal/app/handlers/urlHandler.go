@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
 	"shorter/internal/app/lib"
@@ -8,50 +9,34 @@ import (
 	"strings"
 )
 
-func PostHandler(res http.ResponseWriter, req *http.Request) {
-	contentType := req.Header.Get("Content-Type")
+func PostHandler(c *gin.Context) {
+	//contentType := req.Header.Get("Content-Type")
+	contentType := c.GetHeader("Content-Type")
 	if !strings.Contains(contentType, "text/plain") {
-		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte("Некорректный Content-Type."))
+		c.String(http.StatusBadRequest, "Некорректный Content-Type.")
 		return
 	}
 
-	body, err := io.ReadAll(req.Body)
+	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte("Ошибка чтения тела запроса."))
+		c.String(http.StatusBadRequest, "Ошибка чтения тела запроса.")
 		return
 	}
 	url := string(body)
 	if !lib.ValidateURL(url) {
-		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte("Некорректный URL."))
+		c.String(http.StatusBadRequest, "Некорректный URL.")
 		return
 	}
 	id := storage.GlobalURLStorage.Save(url)
 	respText := "http://localhost:8080/" + id
-	res.WriteHeader(http.StatusCreated)
-	res.Write([]byte(respText))
+	c.String(http.StatusCreated, respText)
 }
-func GetHandler(res http.ResponseWriter, req *http.Request) {
-	id := req.URL.Path[1:]
+func GetHandler(c *gin.Context) {
+	id := c.Param("id")
 	url := storage.GlobalURLStorage.GetURL(id)
 	if url == "" {
-		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte("Ссылка не найдена."))
+		c.String(http.StatusBadRequest, "Not found")
 		return
 	}
-	http.Redirect(res, req, url, http.StatusTemporaryRedirect)
-}
-func URLHandler(res http.ResponseWriter, req *http.Request) {
-
-	if req.Method == http.MethodPost {
-		PostHandler(res, req)
-		return
-	}
-	if req.Method == http.MethodGet {
-		GetHandler(res, req)
-		return
-	}
-	res.WriteHeader(http.StatusBadRequest)
+	c.Redirect(http.StatusTemporaryRedirect, url)
 }
