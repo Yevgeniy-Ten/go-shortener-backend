@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
 	"shorter/internal/handlers"
 )
@@ -17,7 +16,5 @@ func main() {
 			"message": "pong",
 		})
 	})
-	r.POST("/", handlers.PostHandler)
-	r.GET("/:id", handlers.GetHandler)
-	log.Fatal(r.Run(":8080"))
+	r.Run(":8080")
 }
