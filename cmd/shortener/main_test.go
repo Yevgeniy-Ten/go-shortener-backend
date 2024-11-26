@@ -28,12 +28,13 @@ func TestUrlHandler(t *testing.T) {
 		{"Create Url", value{"http://practicum.yandex.ru", "text/plain"}, statusCodeCheck{201}},
 		{"Wrong Url", value{"htt://practicum.yandex.ru", "text/plain"}, statusCodeCheck{400}},
 	}
+	r := handlers.CreateRouter()
 
 	createURL := func(value, contentType string) *http.Response {
 		request := httptest.NewRequest("POST", "/", strings.NewReader(value))
 		request.Header.Set("Content-Type", contentType)
 		recorder := httptest.NewRecorder()
-		handlers.URLHandler(recorder, request)
+		r.ServeHTTP(recorder, request)
 		result := recorder.Result()
 		return result
 	}
@@ -67,7 +68,7 @@ func TestUrlHandler(t *testing.T) {
 			err = result.Body.Close()
 			require.NoError(t, err)
 			recorder := httptest.NewRecorder()
-			handlers.URLHandler(recorder, request)
+			r.ServeHTTP(recorder, request)
 			result = recorder.Result()
 			assert.Equal(t, tt.want.statusCode, result.StatusCode)
 			assert.Equal(t, tt.want.location, result.Header.Get("Location"))

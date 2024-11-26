@@ -40,3 +40,9 @@ func GetHandler(c *gin.Context) {
 	}
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
+func CreateRouter() *gin.Engine {
+	r := gin.Default()
+	r.POST("/", PostHandler)
+	r.GET("/:id", GetHandler)
+	return r
+}
