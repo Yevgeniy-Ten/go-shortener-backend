@@ -4,8 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
-	"shorter/internal/app/lib"
-	"shorter/internal/app/storage"
+	"shorter/internal/storage"
+	"shorter/pkg"
 	"strings"
 )
 
@@ -23,7 +23,7 @@ func PostHandler(c *gin.Context) {
 		return
 	}
 	url := string(body)
-	if !lib.ValidateURL(url) {
+	if !pkg.ValidateURL(url) {
 		c.String(http.StatusBadRequest, "Некорректный URL.")
 		return
 	}

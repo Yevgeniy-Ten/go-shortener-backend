@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"shorter/internal/app/handlers"
+	"shorter/internal/handlers"
 	"strings"
 	"testing"
 )

@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
-	"shorter/internal/app/handlers"
+	"shorter/internal/handlers"
 )
 
 func main() {
