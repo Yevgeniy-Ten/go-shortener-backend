@@ -1,6 +1,8 @@
 package storage
 
-import generateRandomId "shorter/internal/app/lib"
+import (
+	generateRandomId "shorter/pkg"
+)
 
 type ShortURLStorage struct {
 	storage map[string]string
