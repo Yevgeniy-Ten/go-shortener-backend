@@ -26,5 +26,5 @@ func run() error {
 			"message": "pong",
 		})
 	})
-	return r.Run(*cfg.Port)
+	return r.Run(*cfg.Address)
 }
