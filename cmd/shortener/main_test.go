@@ -28,7 +28,12 @@ func TestUrlHandler(t *testing.T) {
 		{"Create Url", value{"http://practicum.yandex.ru", "text/plain"}, statusCodeCheck{201}},
 		{"Wrong Url", value{"htt://practicum.yandex.ru", "text/plain"}, statusCodeCheck{400}},
 	}
-	r := handlers.CreateRouter()
+	h := handlers.Handler{
+		Config: &handlers.Config{
+			ServerAddr: "http://localhost:8080/",
+		},
+	}
+	r := h.CreateRouter()
 
 	createURL := func(value, contentType string) *http.Response {
 		request := httptest.NewRequest("POST", "/", strings.NewReader(value))

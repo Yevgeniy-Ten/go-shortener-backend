@@ -2,19 +2,28 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"shorter/internal/handlers"
 )
 
 func main() {
-	//mux := http.NewServeMux()
-	//mux.HandleFunc("/", handlers.URLHandler)
-	//log.Fatal(http.ListenAndServe(":8080", mux))
-	r := handlers.CreateRouter()
+	if err := run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run() error {
+
+	cfg := NewConfig()
+	h := &handlers.Handler{
+		Config: &cfg.Config,
+	}
+	r := h.CreateRouter()
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
 		})
 	})
-	r.Run(":8080")
+	return r.Run(":8080")
 }

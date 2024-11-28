@@ -9,7 +9,11 @@ import (
 	"strings"
 )
 
-func PostHandler(c *gin.Context) {
+type Handler struct {
+	Config *Config
+}
+
+func (h *Handler) PostHandler(c *gin.Context) {
 	//contentType := req.Header.Get("Content-Type")
 	contentType := c.GetHeader("Content-Type")
 	if !strings.Contains(contentType, "text/plain") {
@@ -28,10 +32,10 @@ func PostHandler(c *gin.Context) {
 		return
 	}
 	id := storage.GlobalURLStorage.Save(url)
-	respText := "http://localhost:8080/" + id
+	respText := h.Config.ServerAddr + id
 	c.String(http.StatusCreated, respText)
 }
-func GetHandler(c *gin.Context) {
+func (h *Handler) GetHandler(c *gin.Context) {
 	id := c.Param("id")
 	url := storage.GlobalURLStorage.GetURL(id)
 	if url == "" {
@@ -40,9 +44,9 @@ func GetHandler(c *gin.Context) {
 	}
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
-func CreateRouter() *gin.Engine {
+func (h *Handler) CreateRouter() *gin.Engine {
 	r := gin.Default()
-	r.POST("/", PostHandler)
-	r.GET("/:id", GetHandler)
+	r.POST("/", h.PostHandler)
+	r.GET("/:id", h.GetHandler)
 	return r
 }
