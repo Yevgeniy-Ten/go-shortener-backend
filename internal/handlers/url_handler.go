@@ -32,7 +32,7 @@ func (h *Handler) PostHandler(c *gin.Context) {
 		return
 	}
 	id := storage.GlobalURLStorage.Save(url)
-	respText := h.Config.ServerAddr + id
+	respText := h.Config.ServerAddr + "/" + id
 	c.String(http.StatusCreated, respText)
 }
 func (h *Handler) GetHandler(c *gin.Context) {
