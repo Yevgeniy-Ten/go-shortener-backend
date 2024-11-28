@@ -11,9 +11,11 @@ type Config struct {
 }
 
 func NewConfig() *Config {
-	serveAddr := flag.String("b", "http://localhost:8080/", "port for server")
+	serveAddr := flag.String("b", "http://localhost:8080/", "address for link")
+	port := flag.String("a", "8080", "port for server")
+	flag.Parse()
 	config := Config{
-		port:   flag.String("a", "8080", "port for server"),
+		port:   port,
 		Config: handlers.Config{ServerAddr: *serveAddr},
 	}
 

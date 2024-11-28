@@ -25,5 +25,5 @@ func run() error {
 			"message": "pong",
 		})
 	})
-	return r.Run(":8080")
+	return r.Run(":" + *cfg.port)
 }
