@@ -30,7 +30,7 @@ func TestUrlHandler(t *testing.T) {
 	}
 	h := handlers.Handler{
 		Config: &handlers.Config{
-			ServerAddr: "http://localhost:8080/",
+			ServerAddr: "http://localhost:8080",
 		},
 	}
 	r := h.CreateRouter()
