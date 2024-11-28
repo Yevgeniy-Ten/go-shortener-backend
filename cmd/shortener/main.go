@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"shorter/config"
 	"shorter/internal/handlers"
 )
 
@@ -15,7 +16,7 @@ func main() {
 
 func run() error {
 
-	cfg := NewConfig()
+	cfg := config.NewConfig()
 	h := &handlers.Handler{
 		Config: &cfg.Config,
 	}
@@ -25,5 +26,5 @@ func run() error {
 			"message": "pong",
 		})
 	})
-	return r.Run(":" + *cfg.port)
+	return r.Run(":" + *cfg.Port)
 }

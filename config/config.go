@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"flag"
@@ -6,7 +6,7 @@ import (
 )
 
 type Config struct {
-	port   *string
+	Port   *string
 	Config handlers.Config
 }
 
@@ -15,7 +15,7 @@ func NewConfig() *Config {
 	port := flag.String("a", "8080", "port for server")
 	flag.Parse()
 	config := Config{
-		port:   port,
+		Port:   port,
 		Config: handlers.Config{ServerAddr: *serveAddr},
 	}
 
