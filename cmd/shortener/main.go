@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -16,9 +17,12 @@ func main() {
 
 func run() error {
 
-	cfg := config.NewConfig()
+	cfg, err := config.NewConfig()
+	if err != nil {
+		return err
+	}
 	h := &handlers.Handler{
-		Config: &cfg.Config,
+		Config: cfg.Config,
 	}
 	r := h.CreateRouter()
 	r.GET("/ping", func(c *gin.Context) {
@@ -26,5 +30,6 @@ func run() error {
 			"message": "pong",
 		})
 	})
-	return r.Run(*cfg.Address)
+	fmt.Println("Starting server at", cfg.Address)
+	return r.Run(cfg.Address)
 }
