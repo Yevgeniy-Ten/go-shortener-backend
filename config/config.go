@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"github.com/caarlos0/env/v11"
 	handlers "shorter/internal/handlers"
 )
@@ -38,6 +39,7 @@ func parseEnv(config *Config) error {
 	}
 	if cfg.Address != "" {
 		config.Address = cfg.Address
+		fmt.Println("Address from env", config.Address)
 	}
 	if cfg.ServerAddr != "" {
 		config.Config.ServerAddr = cfg.ServerAddr
@@ -45,7 +47,9 @@ func parseEnv(config *Config) error {
 	return nil
 }
 func parseFlags(config *Config) {
-	config.Address = *flag.String("a", ":8080", "address for server")
-	config.Config.ServerAddr = *flag.String("b", "http://localhost:8080", "address for link")
+	address := flag.String("a", ":8080", "address for server")
+	serverAddr := flag.String("b", "http://localhost:8080", "address for link")
 	flag.Parse()
+	config.Address = *address
+	config.Config.ServerAddr = *serverAddr
 }
