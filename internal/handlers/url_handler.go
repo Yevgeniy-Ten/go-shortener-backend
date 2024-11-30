@@ -14,7 +14,6 @@ type Handler struct {
 }
 
 func (h *Handler) PostHandler(c *gin.Context) {
-	//contentType := req.Header.Get("Content-Type")
 	contentType := c.GetHeader("Content-Type")
 	if !strings.Contains(contentType, "text/plain") {
 		c.String(http.StatusBadRequest, "Некорректный Content-Type.")

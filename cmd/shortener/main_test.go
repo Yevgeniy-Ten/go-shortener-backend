@@ -19,12 +19,12 @@ func TestUrlHandler(t *testing.T) {
 	type statusCodeCheck struct {
 		statusCode int
 	}
-	createTests := []struct { // добавляем слайс тестов
+	createTests := []struct {
 		name  string
 		value value
 		want  statusCodeCheck
 	}{
-		{"Check Content Type Url", value{"http://practicum.yandex.ru", "text/html"}, statusCodeCheck{400}},
+		{"Check Content Type Url", value{"http://practicum.yandex.ru", "text/html"}, statusCodeCheck{http.StatusBadRequest}},
 		{"Create Url", value{"http://practicum.yandex.ru", "text/plain"}, statusCodeCheck{201}},
 		{"Wrong Url", value{"htt://practicum.yandex.ru", "text/plain"}, statusCodeCheck{400}},
 	}
@@ -44,8 +44,8 @@ func TestUrlHandler(t *testing.T) {
 		return result
 	}
 
-	for _, tt := range createTests { // перебираем все тесты
-		t.Run(tt.name, func(t *testing.T) { // запускаем тест
+	for _, tt := range createTests {
+		t.Run(tt.name, func(t *testing.T) {
 			result := createURL(tt.value.value, tt.value.contentType)
 			assert.Equal(t, tt.want.statusCode, result.StatusCode)
 			defer result.Body.Close()
