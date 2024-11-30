@@ -1,5 +1,13 @@
 package pkg
 
-func ValidateURL(url string) bool {
-	return url[:4] == "http"
+import (
+	"net/url"
+)
+
+func ValidateURL(rawURL string) bool {
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil || parsedURL.Scheme == "" || parsedURL.Host == "" {
+		return false
+	}
+	return true
 }
