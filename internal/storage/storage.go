@@ -20,8 +20,8 @@ func NewShortURLStorage() *ShortURLStorage {
 func (storage *ShortURLStorage) Save(url string) string {
 	newID := generateRandomId.GenerateShortID()
 	storage.mutex.Lock()
-	storage.storage[newID] = url
 	defer storage.mutex.Unlock()
+	storage.storage[newID] = url
 	return newID
 }
 
