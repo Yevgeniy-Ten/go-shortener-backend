@@ -10,6 +10,7 @@ func InitLogger() error {
 	if err != nil {
 		return err
 	}
+	//nolint:errcheck // игнорируем ошибку потому что так принято
 	defer Log.Sync()
 	return nil
 }

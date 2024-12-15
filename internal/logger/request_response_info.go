@@ -1,9 +1,10 @@
 package logger
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"time"
 )
 
 func RequestResponseInfoMiddleware() gin.HandlerFunc {
@@ -15,6 +16,7 @@ func RequestResponseInfoMiddleware() gin.HandlerFunc {
 		latency := time.Since(t)
 		statusCodeToSent := c.Writer.Status()
 		bodySizeToSent := c.Writer.Size()
-		Log.Info("Request", zap.String("uri", uri), zap.String("method", method), zap.Int("status", statusCodeToSent), zap.Int("size", bodySizeToSent), zap.Duration("latency", latency))
+		Log.Info("Request", zap.String("uri", uri), zap.String("method", method),
+			zap.Int("status", statusCodeToSent), zap.Int("size", bodySizeToSent), zap.Duration("latency", latency))
 	}
 }
