@@ -1,18 +1,25 @@
 package pkg
 
 import (
-	"math/rand"
+	"crypto/rand"
 	"strings"
-	"time"
 )
 
 func GenerateShortID() string {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	const length = 8
 	var shortID strings.Builder
-	randSource := rand.NewSource(time.Now().UnixNano())
-	r := rand.New(randSource)
-	for i := 0; i < 8; i++ {
-		shortID.WriteByte(charset[r.Intn(len(charset))])
+
+	shortID.Grow(length)
+
+	randomBytes := make([]byte, length)
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		panic("failed to generate random bytes")
+	}
+
+	for _, b := range randomBytes {
+		shortID.WriteByte(charset[b%byte(len(charset))])
 	}
 
 	return shortID.String()

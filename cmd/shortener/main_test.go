@@ -1,14 +1,15 @@
 package main
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"shorter/internal/handlers"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestUrlHandler(t *testing.T) {
@@ -80,5 +81,4 @@ func TestUrlHandler(t *testing.T) {
 			defer result.Body.Close()
 		})
 	}
-
 }

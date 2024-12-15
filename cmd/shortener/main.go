@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"shorter/config"
 	"shorter/internal/handlers"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -16,7 +17,6 @@ func main() {
 }
 
 func run() error {
-
 	cfg, err := config.NewConfig()
 	if err != nil {
 		return err
