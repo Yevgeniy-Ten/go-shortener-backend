@@ -44,9 +44,11 @@ func (h *Handler) GetHandler(c *gin.Context) {
 	}
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
+
 func (h *Handler) CreateRouter() *gin.Engine {
 	r := gin.Default()
 	r.POST("/", h.PostHandler)
+	r.POST("/api/shorten", h.ShortenUrlHandler)
 	r.GET("/:id", h.GetHandler)
 	return r
 }
