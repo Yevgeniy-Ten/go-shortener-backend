@@ -43,13 +43,12 @@ func (h *Handler) ShortenURLHandler(c *gin.Context) {
 		return
 	}
 	id := storage.GlobalURLStorage.Save(data.URL)
-
 	var responseData = ShortenResponse{
 		Result: "http://localhost:8080/" + id,
 	}
 	var buf bytes.Buffer
 
-	err = json.NewDecoder(&buf).Decode(&responseData)
+	err = json.NewEncoder(&buf).Encode(&responseData)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Ошибка сериализации данных")
 		return
