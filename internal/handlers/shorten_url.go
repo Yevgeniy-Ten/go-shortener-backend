@@ -3,10 +3,11 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"shorter/internal/storage"
 	"shorter/pkg"
+
+	"github.com/gin-gonic/gin"
 )
 
 type ShortenRequest struct {
@@ -18,7 +19,6 @@ type ShortenResponse struct {
 }
 
 func (h *Handler) ShortenURLHandler(c *gin.Context) {
-
 	var data ShortenRequest
 	body, err := c.GetRawData()
 
@@ -33,10 +33,10 @@ func (h *Handler) ShortenURLHandler(c *gin.Context) {
 	}
 
 	// #second variant
-	//if err := c.BindJSON(&req); err != nil {
+	//  if err := c.BindJSON(&req); err != nil {
 	//	c.String(http.StatusBadRequest, "Ошибка чтения тела запроса.")
 	//	return
-	//}
+	// }
 
 	if !pkg.ValidateURL(data.URL) {
 		c.String(http.StatusBadRequest, "Некорректный URL.")
