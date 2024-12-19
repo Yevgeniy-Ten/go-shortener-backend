@@ -22,12 +22,21 @@ func TestUrlHandler(t *testing.T) {
 	}
 	createTests := []struct {
 		name  string
+		url   string
 		value value
 		want  statusCodeCheck
 	}{
-		{"Check Content Type Url", value{"http://practicum.yandex.ru", "text/html"}, statusCodeCheck{http.StatusBadRequest}},
-		{"Create Url", value{"http://practicum.yandex.ru", "text/plain"}, statusCodeCheck{201}},
-		{"Wrong Url", value{"http://practicum.yandex.ru", "text/plain"}, statusCodeCheck{201}},
+		{"Check Content Type Url", "/", value{"http://practicum.yandex.ru", "text/html"}, statusCodeCheck{http.StatusBadRequest}},
+		{"Create Url", "/", value{"http://practicum.yandex.ru", "text/plain"}, statusCodeCheck{http.StatusCreated}},
+		{"Create Url", "/", value{"http://practicum.yandex.ru", "text/plain"}, statusCodeCheck{http.StatusCreated}},
+		{"Create Url", "/", value{"http://practicum.yandex.ru", "text/plain"}, statusCodeCheck{http.StatusCreated}},
+		{
+			"JSON CREATE", "/api/shorten", value{
+				`{"url":"http://practicum.yandex.ru"}`,
+				"application/json",
+			},
+			statusCodeCheck{http.StatusCreated},
+		},
 	}
 	h := handlers.Handler{
 		Config: &handlers.Config{
@@ -36,8 +45,8 @@ func TestUrlHandler(t *testing.T) {
 	}
 	r := h.CreateRouter()
 
-	createURL := func(value, contentType string) *http.Response {
-		request := httptest.NewRequest("POST", "/", strings.NewReader(value))
+	createURL := func(value, contentType, url string) *http.Response {
+		request := httptest.NewRequest("POST", url, strings.NewReader(value))
 		request.Header.Set("Content-Type", contentType)
 		recorder := httptest.NewRecorder()
 		r.ServeHTTP(recorder, request)
@@ -47,7 +56,7 @@ func TestUrlHandler(t *testing.T) {
 
 	for _, tt := range createTests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := createURL(tt.value.value, tt.value.contentType)
+			result := createURL(tt.value.value, tt.value.contentType, tt.url)
 			assert.Equal(t, tt.want.statusCode, result.StatusCode)
 			defer result.Body.Close()
 		})
@@ -67,7 +76,7 @@ func TestUrlHandler(t *testing.T) {
 	}
 	for _, tt := range redirectTests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := createURL(tt.value.value, tt.value.contentType)
+			result := createURL(tt.value.value, tt.value.contentType, "/")
 			body, err := io.ReadAll(result.Body)
 			require.NoError(t, err)
 			request := httptest.NewRequest("GET", string(body), nil)
