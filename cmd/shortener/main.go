@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"shorter/config"
 	"shorter/internal/handlers"
+	"shorter/internal/logger"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,10 +22,15 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	err = logger.InitLogger()
+	if err != nil {
+		return err
+	}
 	h := &handlers.Handler{
 		Config: cfg.Config,
 	}
 	r := h.CreateRouter()
+	r.Use(logger.RequestResponseInfoMiddleware())
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
