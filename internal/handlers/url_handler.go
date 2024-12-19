@@ -48,7 +48,7 @@ func (h *Handler) GetHandler(c *gin.Context) {
 func (h *Handler) CreateRouter() *gin.Engine {
 	r := gin.Default()
 	r.POST("/", h.PostHandler)
-	r.POST("/api/shorten", h.ShortenUrlHandler)
+	r.POST("/api/shorten", h.ShortenURLHandler)
 	r.GET("/:id", h.GetHandler)
 	return r
 }
