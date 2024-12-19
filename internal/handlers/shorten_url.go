@@ -18,7 +18,7 @@ type ShortenResponse struct {
 	Result string `json:"result"`
 }
 
-func (h *Handler) ShortenUrlHandler(c *gin.Context) {
+func (h *Handler) ShortenURLHandler(c *gin.Context) {
 	contentType := c.GetHeader("Content-Type")
 	if !strings.Contains(contentType, "application/json") {
 		c.String(http.StatusBadRequest, "Некорректный Content-Type.")
