@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"shorter/internal/storage"
 	"shorter/pkg"
-	"strings"
 )
 
 type ShortenRequest struct {
@@ -19,11 +18,6 @@ type ShortenResponse struct {
 }
 
 func (h *Handler) ShortenURLHandler(c *gin.Context) {
-	contentType := c.GetHeader("Content-Type")
-	if !strings.Contains(contentType, "application/json") {
-		c.String(http.StatusBadRequest, "Некорректный Content-Type.")
-		return
-	}
 
 	var data ShortenRequest
 	body, err := c.GetRawData()
