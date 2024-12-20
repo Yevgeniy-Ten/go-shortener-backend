@@ -20,7 +20,6 @@ func (h *Handler) PostHandler(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Некорректный Content-Type.")
 		return
 	}
-
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Ошибка чтения тела запроса.")
