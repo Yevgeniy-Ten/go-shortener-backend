@@ -1,13 +1,14 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
 	"shorter/internal/gzipper"
 	"shorter/internal/logger"
 	"shorter/internal/storage"
 	"shorter/pkg"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
