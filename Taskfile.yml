@@ -2,7 +2,7 @@ version: '3'
 
 vars:
   build_cmd: "cd cmd/shortener && go build -o shortener *.go && cd ../.."
-  test_cmd: "-binary-path=cmd/shortener/shortener -source-path=. -server-port=8080"
+  test_cmd: "-binary-path=cmd/shortener/shortener -source-path=. -server-port=8080 --file-storage-path=storage"
 
 tasks:
   install-linter:
