@@ -1,8 +1,8 @@
 version: '3'
 
 vars:
-  build_cmd: "cd cmd/shortener && go build -buildvcs=false -o server && cd ../.."
-  test_cmd: "./shortenertest -test.v -binary-path=cmd/shortener/server -source-path=. -agent-binary-path=cmd/agent/agent -server-port 8080"
+  build_cmd: "cd cmd/shortener && go build -o shortener *.go && cd ../.."
+  test_cmd: "-binary-path=cmd/shortener/shortener -source-path=. -server-port=8080"
 
 tasks:
   install-linter:
@@ -73,6 +73,7 @@ tasks:
       - task: test5
       - task: test6
       - task: test7
+      - task: test8
       - echo "Tests are done"
 
   test1:
@@ -102,3 +103,7 @@ tasks:
   test7:
     cmds:
       - "{{.build_cmd}} && ./shortenertest -test.run=TestIteration7 {{.test_cmd}}"
+
+  test8:
+    cmds:
+      - "{{.build_cmd}} && ./shortenertest -test.run=TestIteration8 {{.test_cmd}}"

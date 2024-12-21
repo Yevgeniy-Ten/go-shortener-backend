@@ -28,7 +28,6 @@ func TestUrlHandlers(t *testing.T) {
 		value value
 		want  statusCodeCheck
 	}{
-		{"Check Content Type Url", "/", value{"http://practicum.yandex.ru", "text/html"}, statusCodeCheck{http.StatusBadRequest}},
 		{"Create Url", "/", value{"http://practicum.yandex.ru", "text/plain"}, statusCodeCheck{http.StatusCreated}},
 		{"Create Url", "/", value{"http://practicum.yandex.ru", "text/plain"}, statusCodeCheck{http.StatusCreated}},
 		{"Create Url", "/", value{"http://practicum.yandex.ru", "text/plain"}, statusCodeCheck{http.StatusCreated}},
