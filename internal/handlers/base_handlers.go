@@ -8,6 +8,7 @@ import (
 	"shorter/pkg"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type Handler struct {
@@ -35,7 +36,10 @@ func (h *Handler) PostHandler(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Некорректный URL.")
 		return
 	}
-	id := h.Storage.Save(url)
+	id, err := h.Storage.Save(url)
+	if err != nil {
+		h.Log.Error("Ошибка сохранения URL: ", zap.Error(err))
+	}
 	respText := h.Config.ServerAddr + "/" + id
 	c.String(http.StatusCreated, respText)
 }

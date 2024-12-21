@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"shorter/config"
@@ -11,6 +10,7 @@ import (
 	"shorter/internal/storage"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -32,6 +32,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	defer fileStorage.Close()
 	h := handlers.NewHandler(cfg.Config, fileStorage, myLogger)
 	r := h.CreateRouter(
 		gzipper.RequestResponseGzipMiddleware(),
@@ -42,6 +43,6 @@ func run() error {
 			"message": "pong",
 		})
 	})
-	fmt.Println("Starting server at", cfg.Address)
+	myLogger.Info("Server started", zap.String("address", cfg.Address))
 	return r.Run(cfg.Address)
 }

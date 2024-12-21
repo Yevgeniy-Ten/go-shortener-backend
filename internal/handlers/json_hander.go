@@ -7,6 +7,7 @@ import (
 	"shorter/pkg"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type ShortenRequest struct {
@@ -41,7 +42,10 @@ func (h *Handler) ShortenURLHandler(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Некорректный URL.")
 		return
 	}
-	id := h.Storage.Save(data.URL)
+	id, err := h.Storage.Save(data.URL)
+	if err != nil {
+		h.Log.Error("Ошибка сохранения URL: ", zap.Error(err))
+	}
 	var responseData = ShortenResponse{
 		Result: "http://localhost:8080/" + id,
 	}
