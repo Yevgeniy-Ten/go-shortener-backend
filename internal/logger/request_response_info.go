@@ -7,7 +7,8 @@ import (
 	"go.uber.org/zap"
 )
 
-func RequestResponseInfoMiddleware() gin.HandlerFunc {
+func RequestResponseInfoMiddleware(
+	logger MyLogger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t := time.Now()
 		uri := c.Request.RequestURI
@@ -16,7 +17,7 @@ func RequestResponseInfoMiddleware() gin.HandlerFunc {
 		latency := time.Since(t)
 		statusCodeToSent := c.Writer.Status()
 		bodySizeToSent := c.Writer.Size()
-		Log.Info("Request", zap.String("uri", uri), zap.String("method", method),
+		logger.Info("Request", zap.String("uri", uri), zap.String("method", method),
 			zap.Int("status", statusCodeToSent), zap.Int("size", bodySizeToSent), zap.Duration("latency", latency))
 	}
 }

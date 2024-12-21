@@ -3,7 +3,6 @@ package handlers
 import (
 	"io"
 	"net/http"
-	"shorter/internal/gzipper"
 	"shorter/internal/logger"
 	"shorter/internal/storage"
 	"shorter/pkg"
@@ -12,7 +11,17 @@ import (
 )
 
 type Handler struct {
-	Config *Config
+	Config  *Config
+	Storage *storage.ShortURLStorage
+	Log     logger.MyLogger
+}
+
+func NewHandler(config *Config, storage *storage.ShortURLStorage, log logger.MyLogger) *Handler {
+	return &Handler{
+		Config:  config,
+		Storage: storage,
+		Log:     log,
+	}
 }
 
 func (h *Handler) PostHandler(c *gin.Context) {
@@ -26,26 +35,17 @@ func (h *Handler) PostHandler(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Некорректный URL.")
 		return
 	}
-	id := storage.GlobalURLStorage.Save(url)
+	id := h.Storage.Save(url)
 	respText := h.Config.ServerAddr + "/" + id
 	c.String(http.StatusCreated, respText)
 }
+
 func (h *Handler) GetHandler(c *gin.Context) {
 	id := c.Param("id")
-	url := storage.GlobalURLStorage.GetURL(id)
+	url := h.Storage.GetURL(id)
 	if url == "" {
 		c.String(http.StatusBadRequest, "Not found")
 		return
 	}
 	c.Redirect(http.StatusTemporaryRedirect, url)
-}
-
-func (h *Handler) CreateRouter() *gin.Engine {
-	r := gin.Default()
-	r.Use(gzipper.RequestResponseGzipMiddleware())
-	r.Use(logger.RequestResponseInfoMiddleware())
-	r.POST("/", h.PostHandler)
-	r.POST("/api/shorten", h.ShortenURLHandler)
-	r.GET("/:id", h.GetHandler)
-	return r
 }

@@ -28,13 +28,15 @@ func (g *myReader) Read(p []byte) (n int, err error) {
 	return g.reader.Read(p)
 }
 
-func RequestResponseGzipMiddleware() gin.HandlerFunc {
+func RequestResponseGzipMiddleware(
+	logger logger.MyLogger,
+) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		contentEncodingHeader := c.GetHeader("Content-Encoding")
 		if strings.Contains(contentEncodingHeader, "gzip") {
 			reader, err := gzip.NewReader(c.Request.Body)
 			if err != nil {
-				logger.Log.Error("Ошибка чтения тела запроса")
+				logger.Error("Ошибка чтения тела запроса")
 				c.String(http.StatusBadRequest, "Ошибка чтения тела запроса")
 				return
 			}

@@ -7,6 +7,7 @@ import (
 	"shorter/config"
 	"shorter/internal/handlers"
 	"shorter/internal/logger"
+	"shorter/internal/storage"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,13 +23,15 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	err = logger.InitLogger()
+	myLogger, err := logger.InitLogger()
 	if err != nil {
 		return err
 	}
-	h := &handlers.Handler{
-		Config: cfg.Config,
+	fileStorage, err := storage.NewShortURLStorage(cfg.FilePath)
+	if err != nil {
+		return err
 	}
+	h := handlers.NewHandler(cfg.Config, fileStorage, myLogger)
 	r := h.CreateRouter()
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

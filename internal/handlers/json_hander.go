@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
-	"shorter/internal/storage"
 	"shorter/pkg"
 
 	"github.com/gin-gonic/gin"
@@ -42,7 +41,7 @@ func (h *Handler) ShortenURLHandler(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Некорректный URL.")
 		return
 	}
-	id := storage.GlobalURLStorage.Save(data.URL)
+	id := h.Storage.Save(data.URL)
 	var responseData = ShortenResponse{
 		Result: "http://localhost:8080/" + id,
 	}
