@@ -110,7 +110,6 @@ func TestUrlHandlers(t *testing.T) {
 			recorder := httptest.NewRecorder()
 			r.ServeHTTP(recorder, request)
 			result := recorder.Result()
-
 			defer result.Body.Close()
 			assert.Equal(t, http.StatusCreated, result.StatusCode)
 		})
