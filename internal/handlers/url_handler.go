@@ -3,6 +3,8 @@ package handlers
 import (
 	"io"
 	"net/http"
+	"shorter/internal/gzipper"
+	"shorter/internal/logger"
 	"shorter/internal/storage"
 	"shorter/pkg"
 	"strings"
@@ -46,6 +48,8 @@ func (h *Handler) GetHandler(c *gin.Context) {
 
 func (h *Handler) CreateRouter() *gin.Engine {
 	r := gin.Default()
+	r.Use(gzipper.RequestResponseGzipMiddleware())
+	r.Use(logger.RequestResponseInfoMiddleware())
 	r.POST("/", h.PostHandler)
 	r.POST("/api/shorten", h.ShortenURLHandler)
 	r.GET("/:id", h.GetHandler)
