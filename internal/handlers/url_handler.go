@@ -1,15 +1,13 @@
 package handlers
 
 import (
+	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
 	"shorter/internal/gzipper"
 	"shorter/internal/logger"
 	"shorter/internal/storage"
 	"shorter/pkg"
-	"strings"
-
-	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
@@ -17,11 +15,6 @@ type Handler struct {
 }
 
 func (h *Handler) PostHandler(c *gin.Context) {
-	contentType := c.GetHeader("Content-Type")
-	if !strings.Contains(contentType, "text/plain") {
-		c.String(http.StatusBadRequest, "Некорректный Content-Type.")
-		return
-	}
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Ошибка чтения тела запроса.")
