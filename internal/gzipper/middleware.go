@@ -4,7 +4,7 @@ import (
 	"compress/gzip"
 	"io"
 	"net/http"
-	"shorter/internal/logger"
+	logger "shorter/internal/logger"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -29,14 +29,14 @@ func (g *myReader) Read(p []byte) (n int, err error) {
 }
 
 func RequestResponseGzipMiddleware(
-	logger logger.MyLogger,
+	log logger.MyLogger,
 ) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		contentEncodingHeader := c.GetHeader("Content-Encoding")
 		if strings.Contains(contentEncodingHeader, "gzip") {
 			reader, err := gzip.NewReader(c.Request.Body)
 			if err != nil {
-				logger.Error("Ошибка чтения тела запроса")
+				log.Error("Ошибка чтения тела запроса")
 				c.String(http.StatusBadRequest, "Ошибка чтения тела запроса")
 				return
 			}

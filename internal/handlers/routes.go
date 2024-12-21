@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
 	"shorter/internal/gzipper"
 	"shorter/internal/logger"
+
+	"github.com/gin-gonic/gin"
 )
 
 func (h *Handler) CreateRouter() *gin.Engine {

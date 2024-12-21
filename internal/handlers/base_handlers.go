@@ -16,10 +16,10 @@ type Handler struct {
 	Log     logger.MyLogger
 }
 
-func NewHandler(config *Config, storage *storage.ShortURLStorage, log logger.MyLogger) *Handler {
+func NewHandler(config *Config, s *storage.ShortURLStorage, log logger.MyLogger) *Handler {
 	return &Handler{
 		Config:  config,
-		Storage: storage,
+		Storage: s,
 		Log:     log,
 	}
 }

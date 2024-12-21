@@ -34,6 +34,6 @@ func (storage *ShortURLStorage) GetURL(id string) string {
 	return storage.storage[id]
 }
 
-func (s *ShortURLStorage) Close() error {
-	return s.file.Close()
+func (storage *ShortURLStorage) Close() error {
+	return storage.file.Close()
 }
