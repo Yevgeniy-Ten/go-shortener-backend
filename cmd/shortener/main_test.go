@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -12,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestUrlHandler(t *testing.T) {
+func TestUrlHandlers(t *testing.T) {
 	type value struct {
 		value       string
 		contentType string
@@ -22,12 +24,20 @@ func TestUrlHandler(t *testing.T) {
 	}
 	createTests := []struct {
 		name  string
+		url   string
 		value value
 		want  statusCodeCheck
 	}{
-		{"Check Content Type Url", value{"http://practicum.yandex.ru", "text/html"}, statusCodeCheck{http.StatusBadRequest}},
-		{"Create Url", value{"http://practicum.yandex.ru", "text/plain"}, statusCodeCheck{201}},
-		{"Wrong Url", value{"http://practicum.yandex.ru", "text/plain"}, statusCodeCheck{201}},
+		{"Check Content Type Url", "/", value{"http://practicum.yandex.ru", "text/html"}, statusCodeCheck{http.StatusBadRequest}},
+		{"Create Url", "/", value{"http://practicum.yandex.ru", "text/plain"}, statusCodeCheck{http.StatusCreated}},
+		{"Create Url", "/", value{"http://practicum.yandex.ru", "text/plain"}, statusCodeCheck{http.StatusCreated}},
+		{"Create Url", "/", value{"http://practicum.yandex.ru", "text/plain"}, statusCodeCheck{http.StatusCreated}},
+		{
+			"JSON CREATE", "/api/shorten", value{`{"url":"http://practicum.yandex.ru"}`,
+				"application/json",
+			},
+			statusCodeCheck{http.StatusCreated},
+		},
 	}
 	h := handlers.Handler{
 		Config: &handlers.Config{
@@ -36,8 +46,8 @@ func TestUrlHandler(t *testing.T) {
 	}
 	r := h.CreateRouter()
 
-	createURL := func(value, contentType string) *http.Response {
-		request := httptest.NewRequest("POST", "/", strings.NewReader(value))
+	createURL := func(value, contentType, url string) *http.Response {
+		request := httptest.NewRequest("POST", url, strings.NewReader(value))
 		request.Header.Set("Content-Type", contentType)
 		recorder := httptest.NewRecorder()
 		r.ServeHTTP(recorder, request)
@@ -47,7 +57,7 @@ func TestUrlHandler(t *testing.T) {
 
 	for _, tt := range createTests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := createURL(tt.value.value, tt.value.contentType)
+			result := createURL(tt.value.value, tt.value.contentType, tt.url)
 			assert.Equal(t, tt.want.statusCode, result.StatusCode)
 			defer result.Body.Close()
 		})
@@ -67,7 +77,7 @@ func TestUrlHandler(t *testing.T) {
 	}
 	for _, tt := range redirectTests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := createURL(tt.value.value, tt.value.contentType)
+			result := createURL(tt.value.value, tt.value.contentType, "/")
 			body, err := io.ReadAll(result.Body)
 			require.NoError(t, err)
 			request := httptest.NewRequest("GET", string(body), nil)
@@ -79,6 +89,29 @@ func TestUrlHandler(t *testing.T) {
 			assert.Equal(t, tt.want.statusCode, result.StatusCode)
 			assert.Equal(t, tt.want.location, result.Header.Get("Location"))
 			defer result.Body.Close()
+		})
+		t.Run("send_gzip", func(t *testing.T) {
+			body := "http://practicum.yandex.ru"
+			var buf bytes.Buffer
+			gzipWriter := gzip.NewWriter(&buf)
+
+			_, err := gzipWriter.Write([]byte(body))
+			if err != nil {
+				t.Fatalf("Ошибка при записи в gzipWriter: %v", err)
+			}
+			err = gzipWriter.Close()
+			if err != nil {
+				t.Fatalf("Ошибка при закрытии gzipWriter: %v", err)
+			}
+			request := httptest.NewRequest("POST", "/", &buf)
+			request.Header.Set("Accept-Encoding", "gzip")
+			request.Header.Set("Content-Type", "text/plain")
+			request.Header.Set("Content-Encoding", "gzip")
+			recorder := httptest.NewRecorder()
+			r.ServeHTTP(recorder, request)
+			result := recorder.Result()
+			defer result.Body.Close()
+			assert.Equal(t, http.StatusCreated, result.StatusCode)
 		})
 	}
 }
