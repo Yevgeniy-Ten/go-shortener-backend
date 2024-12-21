@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -12,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestUrlHandler(t *testing.T) {
+func TestUrlHandlers(t *testing.T) {
 	type value struct {
 		value       string
 		contentType string
@@ -31,8 +33,7 @@ func TestUrlHandler(t *testing.T) {
 		{"Create Url", "/", value{"http://practicum.yandex.ru", "text/plain"}, statusCodeCheck{http.StatusCreated}},
 		{"Create Url", "/", value{"http://practicum.yandex.ru", "text/plain"}, statusCodeCheck{http.StatusCreated}},
 		{
-			"JSON CREATE", "/api/shorten", value{
-				`{"url":"http://practicum.yandex.ru"}`,
+			"JSON CREATE", "/api/shorten", value{`{"url":"http://practicum.yandex.ru"}`,
 				"application/json",
 			},
 			statusCodeCheck{http.StatusCreated},
@@ -88,6 +89,30 @@ func TestUrlHandler(t *testing.T) {
 			assert.Equal(t, tt.want.statusCode, result.StatusCode)
 			assert.Equal(t, tt.want.location, result.Header.Get("Location"))
 			defer result.Body.Close()
+		})
+		t.Run("send_gzip", func(t *testing.T) {
+			body := "http://practicum.yandex.ru"
+			var buf bytes.Buffer
+			gzipWriter := gzip.NewWriter(&buf)
+
+			_, err := gzipWriter.Write([]byte(body))
+			if err != nil {
+				t.Fatalf("Ошибка при записи в gzipWriter: %v", err)
+			}
+			err = gzipWriter.Close()
+			if err != nil {
+				t.Fatalf("Ошибка при закрытии gzipWriter: %v", err)
+			}
+			request := httptest.NewRequest("POST", "/", &buf)
+			request.Header.Set("Accept-Encoding", "gzip")
+			request.Header.Set("Content-Type", "text/plain")
+			request.Header.Set("Content-Encoding", "gzip")
+			recorder := httptest.NewRecorder()
+			r.ServeHTTP(recorder, request)
+			result := recorder.Result()
+
+			defer result.Body.Close()
+			assert.Equal(t, http.StatusCreated, result.StatusCode)
 		})
 	}
 }
