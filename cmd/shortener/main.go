@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"shorter/config"
+	"shorter/internal/gzipper"
 	"shorter/internal/handlers"
 	"shorter/internal/logger"
 	"shorter/internal/storage"
@@ -32,7 +33,10 @@ func run() error {
 		return err
 	}
 	h := handlers.NewHandler(cfg.Config, fileStorage, myLogger)
-	r := h.CreateRouter()
+	r := h.CreateRouter(
+		gzipper.RequestResponseGzipMiddleware(),
+		logger.RequestResponseInfoMiddleware(h.Log),
+	)
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",

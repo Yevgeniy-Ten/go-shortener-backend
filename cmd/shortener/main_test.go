@@ -6,7 +6,9 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"shorter/internal/gzipper"
 	"shorter/internal/handlers"
+	"shorter/internal/storage"
 	"strings"
 	"testing"
 
@@ -38,12 +40,16 @@ func TestUrlHandlers(t *testing.T) {
 			statusCodeCheck{http.StatusCreated},
 		},
 	}
-	h := handlers.Handler{
-		Config: &handlers.Config{
+	s, err := storage.NewShortURLStorage("")
+	require.NoError(t, err)
+	h := handlers.NewHandler(
+		&handlers.Config{
 			ServerAddr: "http://localhost:8080",
 		},
-	}
-	r := h.CreateRouter()
+		s,
+		nil,
+	)
+	r := h.CreateRouter(gzipper.RequestResponseGzipMiddleware())
 
 	createURL := func(value, contentType, url string) *http.Response {
 		request := httptest.NewRequest("POST", url, strings.NewReader(value))

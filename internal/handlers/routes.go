@@ -1,16 +1,14 @@
 package handlers
 
 import (
-	"shorter/internal/gzipper"
-	"shorter/internal/logger"
-
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) CreateRouter() *gin.Engine {
+func (h *Handler) CreateRouter(
+	middlewares ...gin.HandlerFunc,
+) *gin.Engine {
 	r := gin.Default()
-	r.Use(gzipper.RequestResponseGzipMiddleware(h.Log))
-	r.Use(logger.RequestResponseInfoMiddleware(h.Log))
+	r.Use(middlewares...)
 	r.POST("/", h.PostHandler)
 	r.POST("/api/shorten", h.ShortenURLHandler)
 	r.GET("/:id", h.GetHandler)
