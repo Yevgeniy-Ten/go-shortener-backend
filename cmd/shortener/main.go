@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"shorter/config"
+	"shorter/internal/gzipper"
 	"shorter/internal/handlers"
 	"shorter/internal/logger"
 
@@ -30,6 +31,7 @@ func run() error {
 		Config: cfg.Config,
 	}
 	r := h.CreateRouter()
+	r.Use(gzipper.RequestResponseGzipMiddleware())
 	r.Use(logger.RequestResponseInfoMiddleware())
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
