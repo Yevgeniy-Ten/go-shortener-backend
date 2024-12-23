@@ -2,7 +2,10 @@ package logger
 
 import "go.uber.org/zap"
 
-type MyLogger = *zap.Logger
+type MyLogger interface {
+	Error(msg string, fields ...zap.Field)
+	Info(msg string, fields ...zap.Field)
+}
 
 func InitLogger() (MyLogger, error) {
 	myLogger, err := zap.NewProduction()

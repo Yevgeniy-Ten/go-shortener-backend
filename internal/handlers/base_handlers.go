@@ -3,21 +3,29 @@ package handlers
 import (
 	"io"
 	"net/http"
-	"shorter/internal/logger"
-	"shorter/internal/storage"
 	"shorter/pkg"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
-type Handler struct {
-	Config  *Config
-	Storage *storage.ShortURLStorage
-	Log     logger.MyLogger
+type Storage interface {
+	Save(value string) (string, error)
+	GetURL(key string) string
 }
 
-func NewHandler(config *Config, s *storage.ShortURLStorage, log logger.MyLogger) *Handler {
+type Logger interface {
+	Error(msg string, fields ...zap.Field)
+	Info(msg string, fields ...zap.Field)
+}
+
+type Handler struct {
+	Config  *Config
+	Storage Storage
+	Log     Logger
+}
+
+func NewHandler(config *Config, s Storage, log Logger) *Handler {
 	return &Handler{
 		Config:  config,
 		Storage: s,
