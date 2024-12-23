@@ -32,12 +32,6 @@ func (h *Handler) ShortenURLHandler(c *gin.Context) {
 		return
 	}
 
-	// #second variant
-	//  if err := c.BindJSON(&req); err != nil {
-	//	c.String(http.StatusBadRequest, "Ошибка чтения тела запроса.")
-	//	return
-	// }
-
 	if !pkg.ValidateURL(data.URL) {
 		c.String(http.StatusBadRequest, "Некорректный URL.")
 		return
