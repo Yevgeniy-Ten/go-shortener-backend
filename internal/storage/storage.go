@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bufio"
+	"io"
 	"os"
 	generateRandomId "shorter/pkg"
 	"sync"
@@ -14,7 +15,7 @@ const (
 type ShortURLStorage struct {
 	storage map[string]string
 	mutex   *sync.Mutex
-	file    *os.File
+	file    io.WriteCloser
 	writer  *bufio.Writer
 	scanner *bufio.Scanner
 }
@@ -75,6 +76,7 @@ func (storage *ShortURLStorage) Save(url string) (string, error) {
 	storage.storage[newID] = url
 	err := storage.WriteToFile(newID, url)
 	if err != nil {
+		delete(storage.storage, newID)
 		return "", err
 	}
 	return newID, nil
