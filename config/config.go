@@ -2,55 +2,62 @@ package config
 
 import (
 	"flag"
-	"fmt"
-	handlers "shorter/internal/handlers"
+	"shorter/internal/handlers"
 
 	"github.com/caarlos0/env/v11"
 )
 
 type Config struct {
-	Address string
-	Config  *handlers.Config
+	Address  string
+	FilePath string
+	Config   *handlers.Config
 }
 
 func NewConfig() (*Config, error) {
-	var config = Config{
+	config := &Config{
+		Address:  ":8080",
+		FilePath: "storage",
 		Config: &handlers.Config{
-			ServerAddr: "",
+			ServerAddr: "http://localhost:8080",
 		},
-		Address: "",
 	}
-	parseFlags(&config)
-	err := parseEnv(&config)
-	if err != nil {
+
+	parseFlags(config)
+	if err := parseEnv(config); err != nil {
 		return nil, err
 	}
-	return &config, nil
+
+	return config, nil
 }
 
 func parseEnv(config *Config) error {
 	type EnvConfig struct {
 		Address    string `env:"SERVER_ADDRESS"`
 		ServerAddr string `env:"SERVER_URL"`
+		FilePath   string `env:"FILE_STORAGE_PATH"`
 	}
 
-	var cfg EnvConfig
-	if err := env.Parse(&cfg); err != nil {
+	var envConfig EnvConfig
+	if err := env.Parse(&envConfig); err != nil {
 		return err
 	}
-	if cfg.Address != "" {
-		config.Address = cfg.Address
-		fmt.Println("Address from env", config.Address)
+
+	// Обновляем конфигурацию только если переменные окружения заданы
+	if envConfig.Address != "" {
+		config.Address = envConfig.Address
 	}
-	if cfg.ServerAddr != "" {
-		config.Config.ServerAddr = cfg.ServerAddr
+	if envConfig.FilePath != "" {
+		config.FilePath = envConfig.FilePath
+	}
+	if envConfig.ServerAddr != "" {
+		config.Config.ServerAddr = envConfig.ServerAddr
 	}
 	return nil
 }
+
 func parseFlags(config *Config) {
-	address := flag.String("a", ":8080", "address for server")
-	serverAddr := flag.String("b", "http://localhost:8080", "address for link")
+	flag.StringVar(&config.Address, "a", config.Address, "address for server")
+	flag.StringVar(&config.Config.ServerAddr, "b", config.Config.ServerAddr, "address for link")
+	flag.StringVar(&config.FilePath, "f", config.FilePath, "path to file")
 	flag.Parse()
-	config.Address = *address
-	config.Config.ServerAddr = *serverAddr
 }

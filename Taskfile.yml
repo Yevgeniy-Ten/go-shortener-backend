@@ -1,5 +1,9 @@
 version: '3'
 
+vars:
+  build_cmd: "cd cmd/shortener && go build -o shortener *.go && cd ../.."
+  test_cmd: "-binary-path=cmd/shortener/shortener -source-path=. -server-port=8080 --file-storage-path=storage"
+
 tasks:
   install-linter:
     desc: Install golangci-lint based on the GOOS value from go env
@@ -59,3 +63,47 @@ tasks:
       cmds:
         - golangci-lint run --config .golangci.yml
       silent: true
+  tests:
+    desc: Run tests
+    cmds:
+      - task: test1
+      - task: test2
+      - task: test3
+      - task: test4
+      - task: test5
+      - task: test6
+      - task: test7
+      - task: test8
+      - echo "Tests are done"
+
+  test1:
+    cmds:
+      - "{{.build_cmd}} && ./shortenertest -test.run=^TestIteration1$ {{.test_cmd}}"
+
+  test2:
+    cmds:
+      - "{{.build_cmd}} && ./shortenertest -test.run=TestIteration2 {{.test_cmd}}"
+
+  test3:
+    cmds:
+      - "{{.build_cmd}} && ./shortenertest -test.run=TestIteration3 {{.test_cmd}}"
+
+  test4:
+    cmds:
+      - "{{.build_cmd}} && ./shortenertest -test.run=TestIteration4 {{.test_cmd}}"
+
+  test5:
+    cmds:
+      - "{{.build_cmd}} && ./shortenertest -test.run=TestIteration5 {{.test_cmd}}"
+
+  test6:
+    cmds:
+      - "{{.build_cmd}} && ./shortenertest -test.run=TestIteration6 {{.test_cmd}}"
+
+  test7:
+    cmds:
+      - "{{.build_cmd}} && ./shortenertest -test.run=TestIteration7 {{.test_cmd}}"
+
+  test8:
+    cmds:
+      - "{{.build_cmd}} && ./shortenertest -test.run=TestIteration8 {{.test_cmd}}"
