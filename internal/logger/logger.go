@@ -6,7 +6,10 @@ import (
 	"go.uber.org/zap"
 )
 
-const zapFieldsKey = "zapFields"
+type contextKey struct{}
+
+// Создайте уникальный экземпляр ключа
+var zapFieldsKey = contextKey{}
 
 type ZapFields []zap.Field
 type ZapLogger struct {
@@ -18,7 +21,6 @@ func (z *ZapFields) Append(fields ...zap.Field) {
 }
 
 func (z *ZapLogger) WithContextFields(ctx context.Context, fields ...zap.Field) context.Context {
-	//nolint:staticcheck // ignore SA1019 because we guarantee that zapFieldsKey is unique
 	return context.WithValue(ctx, zapFieldsKey, fields)
 }
 func (z *ZapLogger) withCtxFields(ctx context.Context, fields ...zap.Field) []zap.Field {
