@@ -11,18 +11,18 @@ import (
 	"go.uber.org/zap"
 )
 
-type Storage interface {
+type storage interface {
 	Save(value string) (string, error)
 	GetURL(key string) string
 }
 
 type Handler struct {
 	Config  *Config
-	Storage Storage
+	Storage storage
 	Log     *logger.ZapLogger
 }
 
-func NewHandler(config *Config, s Storage, log *logger.ZapLogger) *Handler {
+func NewHandler(config *Config, s storage, log *logger.ZapLogger) *Handler {
 	return &Handler{
 		Config:  config,
 		Storage: s,
@@ -33,7 +33,7 @@ func NewHandler(config *Config, s Storage, log *logger.ZapLogger) *Handler {
 func (h *Handler) PostHandler(c *gin.Context) {
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		c.String(http.StatusBadRequest, "Ошибка чтения тела запроса.")
+		c.String(http.StatusBadRequest, "Read error")
 		return
 	}
 	url := string(body)
@@ -43,7 +43,7 @@ func (h *Handler) PostHandler(c *gin.Context) {
 	}
 	id, err := h.Storage.Save(url)
 	if err != nil {
-		h.Log.ErrorCtx(context.TODO(), "Ошибка сохранения URL: ", zap.Error(err))
+		h.Log.ErrorCtx(context.TODO(), "Error when save ", zap.Error(err))
 	}
 	respText := h.Config.ServerAddr + "/" + id
 	c.String(http.StatusCreated, respText)

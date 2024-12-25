@@ -5,31 +5,28 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"shorter/internal/domain"
 	"shorter/pkg"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
-type ShortenRequest struct {
-	URL string `json:"url"`
-}
-
 type ShortenResponse struct {
 	Result string `json:"result"`
 }
 
 func (h *Handler) ShortenURLHandler(c *gin.Context) {
-	var data ShortenRequest
+	var data domain.ShortenRequest
 	body, err := c.GetRawData()
 
 	if err != nil {
-		c.String(http.StatusBadRequest, "Ошибка чтения тела запроса.")
+		c.String(http.StatusBadRequest, "Read error")
 		return
 	}
 
 	if err := json.Unmarshal(body, &data); err != nil {
-		c.String(http.StatusBadRequest, "Ошибка чтения тела запроса.")
+		c.String(http.StatusBadRequest, "Read error")
 		return
 	}
 
@@ -39,7 +36,7 @@ func (h *Handler) ShortenURLHandler(c *gin.Context) {
 	}
 	id, err := h.Storage.Save(data.URL)
 	if err != nil {
-		h.Log.ErrorCtx(context.TODO(), "Ошибка сохранения URL: ", zap.Error(err))
+		h.Log.ErrorCtx(context.TODO(), "Error when save ", zap.Error(err))
 	}
 	var responseData = ShortenResponse{
 		Result: "http://localhost:8080/" + id,
