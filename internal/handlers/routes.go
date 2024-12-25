@@ -1,10 +1,13 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
+	"context"
 	"net/http"
 	"shorter/internal/gzipper"
 	"shorter/internal/logger"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) CreateRouter(
@@ -19,8 +22,12 @@ func (h *Handler) CreateRouter(
 }
 
 func (h *Handler) GetRoutes() *gin.Engine {
+	ctx := context.Background()
+	ctx = h.Log.WithContextFields(ctx,
+		zap.String("Middleware", "RequestResponseInfoMiddleware"),
+	)
 	r := h.CreateRouter(gzipper.RequestResponseGzipMiddleware(),
-		logger.RequestResponseInfoMiddleware(h.Log))
+		logger.RequestResponseInfoMiddleware(ctx, h.Log))
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",

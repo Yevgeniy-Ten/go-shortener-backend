@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"context"
 	"io"
 	"net/http"
+	"shorter/internal/logger"
 	"shorter/pkg"
 
 	"github.com/gin-gonic/gin"
@@ -14,18 +16,13 @@ type Storage interface {
 	GetURL(key string) string
 }
 
-type Logger interface {
-	Error(msg string, fields ...zap.Field)
-	Info(msg string, fields ...zap.Field)
-}
-
 type Handler struct {
 	Config  *Config
 	Storage Storage
-	Log     Logger
+	Log     *logger.ZapLogger
 }
 
-func NewHandler(config *Config, s Storage, log Logger) *Handler {
+func NewHandler(config *Config, s Storage, log *logger.ZapLogger) *Handler {
 	return &Handler{
 		Config:  config,
 		Storage: s,
@@ -46,7 +43,7 @@ func (h *Handler) PostHandler(c *gin.Context) {
 	}
 	id, err := h.Storage.Save(url)
 	if err != nil {
-		h.Log.Error("Ошибка сохранения URL: ", zap.Error(err))
+		h.Log.ErrorCtx(context.TODO(), "Ошибка сохранения URL: ", zap.Error(err))
 	}
 	respText := h.Config.ServerAddr + "/" + id
 	c.String(http.StatusCreated, respText)

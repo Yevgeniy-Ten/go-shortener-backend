@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"shorter/config"
 	"shorter/internal/handlers"
@@ -32,6 +33,6 @@ func run() error {
 	defer fileStorage.Close()
 	h := handlers.NewHandler(cfg.Config, fileStorage, myLogger)
 	r := h.GetRoutes()
-	myLogger.Info("Server started", zap.String("address", cfg.Address))
+	myLogger.InfoCtx(context.TODO(), "Server started", zap.String("address", cfg.Address))
 	return r.Run(cfg.Address)
 }

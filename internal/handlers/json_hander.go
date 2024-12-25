@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"shorter/pkg"
@@ -38,7 +39,7 @@ func (h *Handler) ShortenURLHandler(c *gin.Context) {
 	}
 	id, err := h.Storage.Save(data.URL)
 	if err != nil {
-		h.Log.Error("Ошибка сохранения URL: ", zap.Error(err))
+		h.Log.ErrorCtx(context.TODO(), "Ошибка сохранения URL: ", zap.Error(err))
 	}
 	var responseData = ShortenResponse{
 		Result: "http://localhost:8080/" + id,

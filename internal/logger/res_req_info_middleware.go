@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"context"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -8,7 +9,8 @@ import (
 )
 
 func RequestResponseInfoMiddleware(
-	logger MyLogger) gin.HandlerFunc {
+	ctx context.Context,
+	logger *ZapLogger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t := time.Now()
 		uri := c.Request.RequestURI
@@ -17,7 +19,7 @@ func RequestResponseInfoMiddleware(
 		latency := time.Since(t)
 		statusCodeToSent := c.Writer.Status()
 		bodySizeToSent := c.Writer.Size()
-		logger.Info("Request", zap.String("uri", uri), zap.String("method", method),
+		logger.InfoCtx(ctx, "RequestResponseInfo", zap.String("uri", uri), zap.String("method", method),
 			zap.Int("status", statusCodeToSent), zap.Int("size", bodySizeToSent), zap.Duration("latency", latency))
 	}
 }
