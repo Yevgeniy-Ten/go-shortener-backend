@@ -74,6 +74,7 @@ tasks:
       - task: test6
       - task: test7
       - task: test8
+      - task: test9
       - echo "Tests are done"
 
   test1:
@@ -107,3 +108,6 @@ tasks:
   test8:
     cmds:
       - "{{.build_cmd}} && ./shortenertest -test.run=TestIteration8 {{.test_cmd}}"
+  test9:
+    cmds:
+      - "{{.build_cmd}} && ./shortenertest -test.run=TestIteration9 {{.test_cmd}}"

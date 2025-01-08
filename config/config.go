@@ -8,9 +8,11 @@ import (
 )
 
 type Config struct {
-	Address  string
-	FilePath string
-	Config   *handlers.Config
+	Address     string `env:"SERVER_ADDRESS"`
+	FilePath    string `env:"FILE_STORAGE_PATH"`
+	ServerAddr  string `env:"SERVER_URL"`
+	DatabaseUrl string `env:"DATABASE_DSN"`
+	Config      *handlers.Config
 }
 
 func NewConfig() (*Config, error) {
@@ -31,13 +33,8 @@ func NewConfig() (*Config, error) {
 }
 
 func parseEnv(config *Config) error {
-	type EnvConfig struct {
-		Address    string `env:"SERVER_ADDRESS"`
-		ServerAddr string `env:"SERVER_URL"`
-		FilePath   string `env:"FILE_STORAGE_PATH"`
-	}
 
-	var envConfig EnvConfig
+	var envConfig Config
 	if err := env.Parse(&envConfig); err != nil {
 		return err
 	}
