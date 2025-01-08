@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"net/http"
 	"shorter/internal/gzipper"
 	"shorter/internal/logger"
 
@@ -28,10 +27,5 @@ func (h *Handler) GetRoutes() *gin.Engine {
 	)
 	r := h.CreateRouter(gzipper.RequestResponseGzipMiddleware(),
 		logger.RequestResponseInfoMiddleware(ctx, h.Log))
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
 	return r
 }

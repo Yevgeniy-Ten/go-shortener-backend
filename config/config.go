@@ -11,7 +11,7 @@ type Config struct {
 	Address     string `env:"SERVER_ADDRESS"`
 	FilePath    string `env:"FILE_STORAGE_PATH"`
 	ServerAddr  string `env:"SERVER_URL"`
-	DatabaseUrl string `env:"DATABASE_DSN"`
+	DatabaseURL string `env:"DATABASE_DSN"`
 	Config      *handlers.Config
 }
 
@@ -33,7 +33,6 @@ func NewConfig() (*Config, error) {
 }
 
 func parseEnv(config *Config) error {
-
 	var envConfig Config
 	if err := env.Parse(&envConfig); err != nil {
 		return err
@@ -56,5 +55,6 @@ func parseFlags(config *Config) {
 	flag.StringVar(&config.Address, "a", config.Address, "address for server")
 	flag.StringVar(&config.Config.ServerAddr, "b", config.Config.ServerAddr, "address for link")
 	flag.StringVar(&config.FilePath, "f", config.FilePath, "path to file")
+	flag.StringVar(&config.DatabaseURL, "d", config.DatabaseURL, "path to file")
 	flag.Parse()
 }
