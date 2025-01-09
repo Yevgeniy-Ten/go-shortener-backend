@@ -29,16 +29,23 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	fileStorage, err := storage.NewShortURLStorage(cfg.FilePath)
+	ctx := context.TODO()
+	db, pgxConnectErr := database.NewConnection(context.TODO(), cfg.DatabaseURL)
+	if pgxConnectErr != nil {
+		myLogger.ErrorCtx(ctx, "Failed to connect to database", zap.Error(pgxConnectErr))
+	}
+
+	defer db.Close(ctx)
+	var fileStorage *storage.ShortURLStorage
+	if db != nil {
+		fileStorage, err = storage.NewShortURLStorage(cfg.FilePath, db)
+	} else {
+		fileStorage, err = storage.NewShortURLStorage(cfg.FilePath, nil)
+	}
 	if err != nil {
 		return err
 	}
 	defer fileStorage.Close()
-	pgxConnect, pgxConnectErr := database.NewConnection(context.TODO(), cfg.DatabaseURL)
-	if pgxConnectErr != nil {
-		myLogger.ErrorCtx(context.TODO(), "Failed to connect to database", zap.Error(pgxConnectErr))
-	}
-	defer pgxConnect.Close(context.TODO())
 	h := handlers.NewHandler(cfg.Config, fileStorage, myLogger)
 	r := h.GetRoutes()
 	r.GET("/ping", func(c *gin.Context) {

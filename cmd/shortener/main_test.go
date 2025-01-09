@@ -40,7 +40,7 @@ func TestUrlHandlers(t *testing.T) {
 			statusCodeCheck{http.StatusCreated},
 		},
 	}
-	s, err := storage.NewShortURLStorage("")
+	s, err := storage.NewShortURLStorage("", nil)
 	require.NoError(t, err)
 	h := handlers.NewHandler(
 		&handlers.Config{

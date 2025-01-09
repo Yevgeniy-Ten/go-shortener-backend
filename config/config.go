@@ -18,7 +18,7 @@ type Config struct {
 func NewConfig() (*Config, error) {
 	config := &Config{
 		Address:  ":8080",
-		FilePath: "storage",
+		FilePath: "",
 		Config: &handlers.Config{
 			ServerAddr: "http://localhost:8080",
 		},

@@ -13,7 +13,7 @@ import (
 
 type storage interface {
 	Save(value string) (string, error)
-	GetURL(key string) string
+	GetURL(shortURL string) string
 }
 
 type Handler struct {
