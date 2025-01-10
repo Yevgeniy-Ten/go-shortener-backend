@@ -5,10 +5,11 @@ import (
 	"log"
 	"net/http"
 	"shorter/config"
-	"shorter/internal/database"
 	"shorter/internal/handlers"
 	"shorter/internal/logger"
 	"shorter/internal/storage"
+	"shorter/internal/storage/database"
+	"shorter/internal/storage/filestorage"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -30,31 +31,33 @@ func run() error {
 		return err
 	}
 	ctx := context.TODO()
-	db, pgxConnectErr := database.NewConnection(context.TODO(), cfg.DatabaseURL)
+	db, pgxConnectErr := database.NewDatabase(ctx, cfg.DatabaseURL)
 	if pgxConnectErr != nil {
-		myLogger.ErrorCtx(ctx, "Failed to connect to database", zap.Error(pgxConnectErr))
+		myLogger.Log.Error("Failed to connect to database", zap.Error(pgxConnectErr))
 	}
-
 	defer db.Close(ctx)
-	var fileStorage *storage.ShortURLStorage
-	if db != nil {
-		fileStorage, err = storage.NewShortURLStorage(cfg.FilePath, db)
-	} else {
-		fileStorage, err = storage.NewShortURLStorage(cfg.FilePath, nil)
-	}
+	fileStorage, err := filestorage.NewFileStorage(cfg.FilePath)
 	if err != nil {
-		return err
+		myLogger.Log.Error("Failed to create file storage", zap.Error(err))
 	}
 	defer fileStorage.Close()
-	h := handlers.NewHandler(cfg.Config, fileStorage, myLogger)
-	r := h.GetRoutes()
-	r.GET("/ping", func(c *gin.Context) {
+	var store *storage.ShortURLStorage
+	if db != nil {
+		store = storage.NewShortURLStorage(db.URLRepo)
+	} else if fileStorage != nil {
+		store = storage.NewShortURLStorage(fileStorage)
+	} else {
+		store = storage.NewShortURLStorage(nil)
+	}
+	defer fileStorage.Close()
+	h := handlers.InitHandlers(cfg.Config, store, myLogger)
+	h.GET("/ping", func(c *gin.Context) {
 		if pgxConnectErr != nil {
 			c.Status(http.StatusInternalServerError)
 			return
 		}
 		c.Status(http.StatusOK)
 	})
-	myLogger.InfoCtx(context.TODO(), "Server started", zap.String("address", cfg.Address))
-	return r.Run(cfg.Address)
+	myLogger.Log.Info("Server started", zap.String("address", cfg.Address))
+	return h.Run(cfg.Address)
 }

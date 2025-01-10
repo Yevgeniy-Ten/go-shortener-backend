@@ -5,6 +5,8 @@ type ShortenRequest struct {
 }
 
 type URLS struct {
-	ShortURL string
-	URL      string
+	URLId string `json:"correlation_id"`
+	URL   string `json:"original_url"`
 }
+
+type Storage map[string]string

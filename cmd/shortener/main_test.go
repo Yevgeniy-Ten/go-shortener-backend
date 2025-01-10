@@ -40,8 +40,7 @@ func TestUrlHandlers(t *testing.T) {
 			statusCodeCheck{http.StatusCreated},
 		},
 	}
-	s, err := storage.NewShortURLStorage("", nil)
-	require.NoError(t, err)
+	s := storage.NewShortURLStorage(nil)
 	h := handlers.NewHandler(
 		&handlers.Config{
 			ServerAddr: "http://localhost:8080",

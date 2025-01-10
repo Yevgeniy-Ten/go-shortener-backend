@@ -13,7 +13,7 @@ var zapFieldsKey = contextKey{}
 
 type ZapFields []zap.Field
 type ZapLogger struct {
-	log *zap.Logger
+	Log *zap.Logger
 }
 
 func (z *ZapFields) Append(fields ...zap.Field) {
@@ -35,10 +35,10 @@ func (z *ZapLogger) withCtxFields(ctx context.Context, fields ...zap.Field) []za
 }
 
 func (z *ZapLogger) InfoCtx(ctx context.Context, msg string, fields ...zap.Field) {
-	z.log.Info(msg, z.withCtxFields(ctx, fields...)...)
+	z.Log.Info(msg, z.withCtxFields(ctx, fields...)...)
 }
 func (z *ZapLogger) ErrorCtx(ctx context.Context, msg string, fields ...zap.Field) {
-	z.log.Error(msg, z.withCtxFields(ctx, fields...)...)
+	z.Log.Error(msg, z.withCtxFields(ctx, fields...)...)
 }
 func InitLogger() (*ZapLogger, error) {
 	cfg := zap.NewProductionConfig()
