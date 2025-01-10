@@ -50,3 +50,31 @@ func (h *Handler) ShortenURLHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, responseData)
 }
+
+func (h *Handler) ShortenURLSHandler(c *gin.Context) {
+	var data []domain.URLS
+	body, err := c.GetRawData()
+
+	if err != nil {
+		c.String(http.StatusBadRequest, "Read error")
+		return
+	}
+
+	if err := json.Unmarshal(body, &data); err != nil {
+		c.String(http.StatusBadRequest, "Read error")
+		return
+	}
+	err = h.Storage.SaveBatch(data)
+	if err != nil {
+		h.Log.Log.Error("Error when save ", zap.Error(err))
+		c.String(http.StatusInternalServerError, "Error")
+	}
+	var responseData []domain.ShortenerBatchResponse
+	for _, url := range data {
+		responseData = append(responseData, domain.ShortenerBatchResponse{
+			URLId: url.URLId,
+			URL:   "http://localhost:8080/" + url.URLId,
+		})
+	}
+	c.JSON(http.StatusCreated, responseData)
+}

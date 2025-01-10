@@ -31,14 +31,14 @@ func run() error {
 		return err
 	}
 	ctx := context.TODO()
-	db, pgxConnectErr := database.NewDatabase(ctx, cfg.DatabaseURL)
+	db, pgxConnectErr := database.NewDatabase(ctx, myLogger, cfg.DatabaseURL)
 	if pgxConnectErr != nil {
-		myLogger.Log.Error("Failed to connect to database", zap.Error(pgxConnectErr))
+		myLogger.Log.Info("Failed to connect to database", zap.Error(pgxConnectErr))
 	}
 	defer db.Close(ctx)
-	fileStorage, err := filestorage.NewFileStorage(cfg.FilePath)
+	fileStorage, err := filestorage.NewFileStorage(cfg.FilePath, myLogger)
 	if err != nil {
-		myLogger.Log.Error("Failed to create file storage", zap.Error(err))
+		myLogger.Log.Info("Failed to create file storage", zap.Error(err))
 	}
 	defer fileStorage.Close()
 	var store *storage.ShortURLStorage

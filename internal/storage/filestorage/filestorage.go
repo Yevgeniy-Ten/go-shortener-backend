@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"shorter/internal/domain"
+	"shorter/internal/logger"
 )
 
 const (
@@ -16,9 +17,10 @@ type FileStorage struct {
 	writer  *bufio.Writer
 	scanner *bufio.Scanner
 	storage domain.Storage
+	logger  *logger.ZapLogger
 }
 
-func NewFileStorage(filePath string) (*FileStorage, error) {
+func NewFileStorage(filePath string, l *logger.ZapLogger) (*FileStorage, error) {
 	if filePath == "" {
 		return nil, fmt.Errorf("file path is empty")
 	}
@@ -32,6 +34,7 @@ func NewFileStorage(filePath string) (*FileStorage, error) {
 		writer:  bufio.NewWriter(file),
 		scanner: bufio.NewScanner(file),
 		storage: make(domain.Storage),
+		logger:  l,
 	}, nil
 }
 
@@ -78,4 +81,9 @@ func (f *FileStorage) writeToFile(newID, url string) error {
 		return err
 	}
 	return nil
+}
+
+func (f *FileStorage) SaveBatch(_ []domain.URLS) error {
+	f.logger.Log.Warn("SaveBatch is not implemented")
+	return fmt.Errorf("not implemented")
 }

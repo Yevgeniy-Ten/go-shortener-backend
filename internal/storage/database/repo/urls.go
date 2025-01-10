@@ -4,16 +4,19 @@ import (
 	"context"
 	"fmt"
 	"shorter/internal/domain"
+	"shorter/internal/logger"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"go.uber.org/zap"
 )
 
 type URLRepo struct {
-	conn *pgx.Conn
+	conn   *pgxpool.Pool
+	logger *logger.ZapLogger
 }
 
-func NewURLRepo(conn *pgx.Conn) *URLRepo {
-	return &URLRepo{conn: conn}
+func NewURLRepo(conn *pgxpool.Pool, l *logger.ZapLogger) *URLRepo {
+	return &URLRepo{conn: conn, logger: l}
 }
 
 func (d *URLRepo) GetURL(shortURL string) (string, error) {
@@ -33,8 +36,31 @@ func (d *URLRepo) Save(values domain.URLS) error {
 	}
 	return nil
 }
+func (d *URLRepo) SaveBatch(values []domain.URLS) error {
+	ctx := context.Background()
+	tx, err := d.conn.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			err = tx.Rollback(ctx)
+			d.logger.Log.Error("Error while Rollback transaction", zap.Error(err))
+		} else {
+			err = tx.Commit(ctx)
+			d.logger.Log.Error("Error while committing transaction", zap.Error(err))
+		}
+	}()
+	for _, value := range values {
+		_, err = tx.Exec(context.TODO(), "INSERT INTO urls (short_url, url) VALUES ($1, $2)", value.URLId, value.URL)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
-func (d *URLRepo) Init(ctx context.Context, conn *pgx.Conn) error {
+func (d *URLRepo) Init(ctx context.Context, conn *pgxpool.Pool) error {
 	_, err := conn.Exec(ctx, `
 		CREATE TABLE IF NOT EXISTS urls (
 			id SERIAL PRIMARY KEY,
@@ -49,5 +75,6 @@ func (d *URLRepo) Init(ctx context.Context, conn *pgx.Conn) error {
 }
 
 func (d *URLRepo) GetInitialData() (domain.Storage, error) {
+	d.logger.Log.Warn("GetInitialData is not implemented")
 	return nil, fmt.Errorf("not implemented")
 }

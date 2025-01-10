@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"shorter/internal/domain"
 	"shorter/internal/gzipper"
 	"shorter/internal/logger"
 
@@ -12,6 +13,7 @@ import (
 type storage interface {
 	Save(value string) (string, error)
 	GetURL(shortURL string) string
+	SaveBatch(urls []domain.URLS) error
 }
 
 type Handler struct {
@@ -46,6 +48,7 @@ func (h *Handler) CreateRouter(
 	r.Use(middlewares...)
 	r.POST("/", h.PostHandler)
 	r.POST("/api/shorten", h.ShortenURLHandler)
+	r.POST("/api/shorten/batch", h.ShortenURLSHandler)
 	r.GET("/:id", h.GetHandler)
 	return r
 }

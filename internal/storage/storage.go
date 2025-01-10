@@ -10,6 +10,7 @@ type database interface {
 	Save(values domain.URLS) error
 	GetURL(shortURL string) (string, error)
 	GetInitialData() (domain.Storage, error)
+	SaveBatch(values []domain.URLS) error
 }
 
 type ShortURLStorage struct {
@@ -60,4 +61,11 @@ func (storage *ShortURLStorage) GetURL(id string) string {
 		return url
 	}
 	return storage.storage[id]
+}
+func (storage *ShortURLStorage) SaveBatch(urls []domain.URLS) error {
+	_ = storage.db.SaveBatch(urls)
+	for _, value := range urls {
+		storage.storage[value.URLId] = value.URL
+	}
+	return nil
 }
