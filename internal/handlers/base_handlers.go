@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	"context"
+	"errors"
 	"io"
 	"net/http"
+	"shorter/internal/storage/database/urls"
 	"shorter/pkg"
 
 	"github.com/gin-gonic/gin"
@@ -23,7 +24,14 @@ func (h *Handler) PostHandler(c *gin.Context) {
 	}
 	id, err := h.Storage.Save(url)
 	if err != nil {
-		h.Log.ErrorCtx(context.TODO(), "Error when save ", zap.Error(err))
+		var duplicateError *urls.DuplicateError
+		if errors.As(err, &duplicateError) {
+			c.String(http.StatusConflict, h.Config.ServerAddr+"/"+duplicateError.ShortURL)
+			return
+		}
+		h.Log.Log.Error("Error when save", zap.Error(err))
+		c.String(http.StatusInternalServerError, "Error")
+		return
 	}
 	respText := h.Config.ServerAddr + "/" + id
 	c.String(http.StatusCreated, respText)

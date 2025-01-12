@@ -38,6 +38,7 @@ func (storage *ShortURLStorage) Save(url string) (string, error) {
 	newID := generateRandomId.GenerateShortID()
 	var err error
 	storage.mutex.Lock()
+	defer storage.mutex.Unlock()
 	if storage.db != nil {
 		err = storage.db.Save(domain.URLS{
 			URLId: newID,
@@ -47,7 +48,6 @@ func (storage *ShortURLStorage) Save(url string) (string, error) {
 			return "", err
 		}
 	}
-	defer storage.mutex.Unlock()
 	storage.storage[newID] = url
 	return newID, nil
 }

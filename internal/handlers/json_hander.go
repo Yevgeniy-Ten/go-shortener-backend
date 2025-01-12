@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"shorter/internal/domain"
+	"shorter/internal/storage/database/urls"
 	"shorter/pkg"
 
 	"github.com/gin-gonic/gin"
@@ -24,7 +25,6 @@ func (h *Handler) ShortenURLHandler(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Read error")
 		return
 	}
-
 	if err := json.Unmarshal(body, &data); err != nil {
 		c.String(http.StatusBadRequest, "Read error")
 		return
@@ -36,10 +36,18 @@ func (h *Handler) ShortenURLHandler(c *gin.Context) {
 	}
 	id, err := h.Storage.Save(data.URL)
 	if err != nil {
-		h.Log.ErrorCtx(context.TODO(), "Error when save ", zap.Error(err))
+		var duplicateError *urls.DuplicateError
+		if errors.As(err, &duplicateError) {
+			c.JSON(http.StatusConflict, ShortenResponse{
+				Result: h.Config.ServerAddr + "/" + duplicateError.ShortURL,
+			})
+			return
+		}
+		c.String(http.StatusInternalServerError, "Error")
+		return
 	}
 	var responseData = ShortenResponse{
-		Result: "http://localhost:8080/" + id,
+		Result: h.Config.ServerAddr + "/" + id,
 	}
 	var buf bytes.Buffer
 
@@ -73,7 +81,7 @@ func (h *Handler) ShortenURLSHandler(c *gin.Context) {
 	for _, url := range data {
 		responseData = append(responseData, domain.ShortenerBatchResponse{
 			URLId: url.URLId,
-			URL:   "http://localhost:8080/" + url.URLId,
+			URL:   h.Config.ServerAddr + "/" + url.URLId,
 		})
 	}
 	c.JSON(http.StatusCreated, responseData)

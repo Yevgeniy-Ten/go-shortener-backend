@@ -3,14 +3,14 @@ package database
 import (
 	"context"
 	"shorter/internal/logger"
-	"shorter/internal/storage/database/repo"
+	"shorter/internal/storage/database/urls"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Database struct {
 	conn    *pgxpool.Pool
-	URLRepo *repo.URLRepo
+	URLRepo *urls.URLRepo
 }
 
 func (d *Database) Close(ctx context.Context) {
@@ -22,10 +22,11 @@ func NewDatabase(ctx context.Context, l *logger.ZapLogger, databasePath string) 
 	if err != nil {
 		return nil, err
 	}
-	urlRepo := repo.NewURLRepo(conn, l)
+	urlRepo := urls.NewURLRepo(conn, l)
 	if err := urlRepo.Init(ctx, conn); err != nil {
 		return nil, err
 	}
+	l.Log.Info("Connected to database")
 	return &Database{
 		conn:    conn,
 		URLRepo: urlRepo,
