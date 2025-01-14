@@ -40,7 +40,7 @@ func TestUrlHandlers(t *testing.T) {
 			statusCodeCheck{http.StatusCreated},
 		},
 	}
-	s := storage.NewShortURLStorage(nil)
+	s := storage.New(nil)
 	h := handlers.NewHandler(
 		&handlers.Config{
 			ServerAddr: "http://localhost:8080",

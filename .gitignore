@@ -24,4 +24,4 @@ vendor/
 shortenertest
 ./storage
 
-.env
+.env.example

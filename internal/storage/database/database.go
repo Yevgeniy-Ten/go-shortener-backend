@@ -17,7 +17,7 @@ func (d *Database) Close(ctx context.Context) {
 	d.conn.Close()
 }
 
-func NewDatabase(ctx context.Context, l *logger.ZapLogger, databasePath string) (*Database, error) {
+func New(ctx context.Context, l *logger.ZapLogger, databasePath string) (*Database, error) {
 	conn, err := pgxpool.New(ctx, databasePath)
 	if err != nil {
 		return nil, err

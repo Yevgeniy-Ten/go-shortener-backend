@@ -20,7 +20,7 @@ type FileStorage struct {
 	logger  *logger.ZapLogger
 }
 
-func NewFileStorage(filePath string, l *logger.ZapLogger) (*FileStorage, error) {
+func New(filePath string, l *logger.ZapLogger) (*FileStorage, error) {
 	if filePath == "" {
 		return nil, fmt.Errorf("file path is empty")
 	}
@@ -56,7 +56,7 @@ func (f *FileStorage) GetURL(shortURL string) (string, error) {
 }
 
 func (f *FileStorage) Save(values domain.URLS) error {
-	newID := values.URLId
+	newID := values.CorrelationID
 	url := values.URL
 	err := f.writeToFile(newID, url)
 	if err != nil {
@@ -86,4 +86,9 @@ func (f *FileStorage) writeToFile(newID, url string) error {
 func (f *FileStorage) SaveBatch(_ []domain.URLS) error {
 	f.logger.Log.Warn("SaveBatch is not implemented")
 	return fmt.Errorf("not implemented")
+}
+
+func (f *FileStorage) Ping() error {
+	f.logger.Log.Warn("Ping is not implemented")
+	return nil
 }

@@ -31,7 +31,7 @@ func (h *Handler) ShortenURLHandler(c *gin.Context) {
 	}
 
 	if !pkg.ValidateURL(data.URL) {
-		c.String(http.StatusBadRequest, "Некорректный URL.")
+		c.String(http.StatusBadRequest, "Некорректный ShortURL.")
 		return
 	}
 	id, err := h.Storage.Save(data.URL)
@@ -80,8 +80,8 @@ func (h *Handler) ShortenURLSHandler(c *gin.Context) {
 	var responseData []domain.ShortenerBatchResponse
 	for _, url := range data {
 		responseData = append(responseData, domain.ShortenerBatchResponse{
-			URLId: url.URLId,
-			URL:   h.Config.ServerAddr + "/" + url.URLId,
+			CorrelationID: url.CorrelationID,
+			ShortURL:      h.Config.ServerAddr + "/" + url.CorrelationID,
 		})
 	}
 	c.JSON(http.StatusCreated, responseData)

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"net/http"
 	"shorter/internal/domain"
 	"shorter/internal/gzipper"
 	"shorter/internal/logger"
@@ -14,6 +15,7 @@ type storage interface {
 	Save(value string) (string, error)
 	GetURL(shortURL string) string
 	SaveBatch(urls []domain.URLS) error
+	Ping() error
 }
 
 type Handler struct {
@@ -38,6 +40,13 @@ func InitHandlers(config *Config, s storage, log *logger.ZapLogger) *gin.Engine 
 	)
 	r := h.CreateRouter(gzipper.RequestResponseGzipMiddleware(),
 		logger.RequestResponseInfoMiddleware(ctx, h.Log))
+	r.GET("/ping", func(c *gin.Context) {
+		if err := h.Storage.Ping(); err != nil {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+		c.Status(http.StatusOK)
+	})
 	return r
 }
 

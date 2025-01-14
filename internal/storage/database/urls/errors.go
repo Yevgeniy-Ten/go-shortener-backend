@@ -6,7 +6,7 @@ type DuplicateError struct {
 }
 
 func (de *DuplicateError) Error() string {
-	return "URL already exists"
+	return "ShortURL already exists"
 }
 
 func NewDuplicateError(existingURL, shortURL string) error {

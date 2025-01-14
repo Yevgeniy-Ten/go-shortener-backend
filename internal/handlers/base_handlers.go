@@ -19,7 +19,7 @@ func (h *Handler) PostHandler(c *gin.Context) {
 	}
 	url := string(body)
 	if !pkg.ValidateURL(url) {
-		c.String(http.StatusBadRequest, "Некорректный URL.")
+		c.String(http.StatusBadRequest, "Некорректный ShortURL.")
 		return
 	}
 	id, err := h.Storage.Save(url)

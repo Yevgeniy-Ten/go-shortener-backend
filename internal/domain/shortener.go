@@ -5,12 +5,12 @@ type ShortenRequest struct {
 }
 
 type ShortenerBatchResponse struct {
-	URLId string `json:"correlation_id"`
-	URL   string `json:"short_url"`
+	CorrelationID string `json:"correlation_id"`
+	ShortURL      string `json:"short_url"`
 }
 type URLS struct {
-	URLId string `json:"correlation_id"`
-	URL   string `json:"original_url"`
+	CorrelationID string `json:"correlation_id"`
+	URL           string `json:"original_url"`
 }
 
 type Storage map[string]string
