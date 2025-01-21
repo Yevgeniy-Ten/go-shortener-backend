@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"net/http"
-	"shorter/internal/cookies"
 	"shorter/internal/domain"
 	"shorter/internal/gzipper"
 	"shorter/internal/logger"
@@ -37,6 +36,9 @@ func InitHandlers(config *Config, s domain.Storage, log *logger.ZapLogger, withD
 		gzipper.RequestResponseGzipMiddleware(),
 		logger.RequestResponseInfoMiddleware(ctx, h.Log),
 	}
+	//if withDatabase {
+	//	middlewares = append(middlewares, cookies.CreateUserMiddleware(h.Log, h.Storage.User))
+	//}
 	r := h.CreateRouter(middlewares...)
 	r.GET("/ping", func(c *gin.Context) {
 		if !withDatabase {
@@ -57,8 +59,6 @@ func (h *Handler) CreateRouter(
 	r.POST("/api/shorten", h.ShortenURLHandler)
 	r.POST("/api/shorten/batch", h.ShortenURLSHandler)
 	r.GET("/:id", h.GetHandler)
-	if h.Storage.User != nil {
-		middlewares = append(middlewares, cookies.CreateUserMiddleware(h.Log, h.Storage.User))
-	}
+
 	return r
 }
