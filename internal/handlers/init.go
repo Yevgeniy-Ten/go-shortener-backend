@@ -36,9 +36,7 @@ func InitHandlers(config *Config, s domain.Storage, log *logger.ZapLogger, withD
 		gzipper.RequestResponseGzipMiddleware(),
 		logger.RequestResponseInfoMiddleware(ctx, h.Log),
 	}
-	//if withDatabase {
-	//	middlewares = append(middlewares, cookies.CreateUserMiddleware(h.Log, h.Storage.User))
-	//}
+
 	r := h.CreateRouter(middlewares...)
 	r.GET("/ping", func(c *gin.Context) {
 		if !withDatabase {
