@@ -37,9 +37,6 @@ func InitHandlers(config *Config, s domain.Storage, log *logger.ZapLogger, withD
 		gzipper.RequestResponseGzipMiddleware(),
 		logger.RequestResponseInfoMiddleware(ctx, h.Log),
 	}
-	if s.User != nil {
-		middlewares = append(middlewares, cookies.CreateUserMiddleware(h.Log, h.Storage.User))
-	}
 	r := h.CreateRouter(middlewares...)
 	r.GET("/ping", func(c *gin.Context) {
 		if !withDatabase {
@@ -60,5 +57,8 @@ func (h *Handler) CreateRouter(
 	r.POST("/api/shorten", h.ShortenURLHandler)
 	r.POST("/api/shorten/batch", h.ShortenURLSHandler)
 	r.GET("/:id", h.GetHandler)
+	if h.Storage.User != nil {
+		middlewares = append(middlewares, cookies.CreateUserMiddleware(h.Log, h.Storage.User))
+	}
 	return r
 }
