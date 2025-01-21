@@ -1,6 +1,7 @@
 package urlstorage
 
 import (
+	"errors"
 	"shorter/internal/domain"
 	generateRandomId "shorter/pkg"
 	"sync"
@@ -11,12 +12,20 @@ type repository interface {
 	GetURL(shortURL string) (string, error)
 	GetInitialData() (domain.URLStorage, error)
 	SaveBatch(values []domain.URLS, userID int) error
+	GetUserURLs(userID int) ([]domain.UserURLs, error)
 }
 
 type ShortURLStorage struct {
 	storage domain.URLStorage
 	mutex   *sync.Mutex
 	db      repository
+}
+
+func (s *ShortURLStorage) GetUserURLs(userID int) ([]domain.UserURLs, error) {
+	if s.db != nil {
+		return s.db.GetUserURLs(userID)
+	}
+	return nil, errors.New("not implemented")
 }
 
 func New(db repository) *ShortURLStorage {
@@ -34,13 +43,13 @@ func New(db repository) *ShortURLStorage {
 	}
 }
 
-func (storage *ShortURLStorage) Save(url string, userID int) (string, error) {
+func (s *ShortURLStorage) Save(url string, userID int) (string, error) {
 	newID := generateRandomId.GenerateShortID()
 	var err error
-	storage.mutex.Lock()
-	defer storage.mutex.Unlock()
-	if storage.db != nil {
-		err = storage.db.Save(domain.URLS{
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	if s.db != nil {
+		err = s.db.Save(domain.URLS{
 			CorrelationID: newID,
 			URL:           url,
 		}, userID)
@@ -48,24 +57,24 @@ func (storage *ShortURLStorage) Save(url string, userID int) (string, error) {
 			return "", err
 		}
 	}
-	storage.storage[newID] = url
+	s.storage[newID] = url
 	return newID, nil
 }
 
-func (storage *ShortURLStorage) GetURL(id string) string {
-	if storage.db != nil {
-		url, err := storage.db.GetURL(id)
+func (s *ShortURLStorage) GetURL(id string) string {
+	if s.db != nil {
+		url, err := s.db.GetURL(id)
 		if err != nil {
 			return ""
 		}
 		return url
 	}
-	return storage.storage[id]
+	return s.storage[id]
 }
-func (storage *ShortURLStorage) SaveBatch(urls []domain.URLS, userID int) error {
-	_ = storage.db.SaveBatch(urls, userID)
+func (s *ShortURLStorage) SaveBatch(urls []domain.URLS, userID int) error {
+	_ = s.db.SaveBatch(urls, userID)
 	for _, value := range urls {
-		storage.storage[value.CorrelationID] = value.URL
+		s.storage[value.CorrelationID] = value.URL
 	}
 	return nil
 }

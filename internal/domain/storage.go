@@ -4,6 +4,7 @@ type urlStorage interface {
 	Save(value string, userID int) (string, error)
 	GetURL(shortURL string) string
 	SaveBatch(urls []URLS, userID int) error
+	GetUserURLs(userID int) ([]UserURLs, error)
 }
 
 type userStorage interface {

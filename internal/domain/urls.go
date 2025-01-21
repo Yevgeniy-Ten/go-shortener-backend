@@ -13,6 +13,11 @@ type URLS struct {
 	URL           string `json:"original_url"`
 }
 
+type UserURLs struct {
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
+}
+
 type ResponseError struct {
 	Description string `json:"description"`
 }

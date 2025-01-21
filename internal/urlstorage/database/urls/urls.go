@@ -17,6 +17,7 @@ const (
 	SelectURLByShortURL = "SELECT url FROM urls WHERE short_url = $1"
 	SelectShortURLByURL = "SELECT short_url FROM urls WHERE url = $1"
 	InsertUrls          = "INSERT INTO urls (short_url, url, user_id) VALUES ($1, $2, $3)"
+	UserURLs            = "SELECT short_url, url FROM urls WHERE user_id = $1"
 )
 
 type URLRepo struct {
@@ -84,6 +85,24 @@ func (d *URLRepo) SaveBatch(values []domain.URLS, userID int) error {
 		}
 	}
 	return nil
+}
+
+func (d *URLRepo) GetUserURLs(userID int) ([]domain.UserURLs, error) {
+	rows, err := d.conn.Query(context.Background(), UserURLs, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var urls []domain.UserURLs
+	for rows.Next() {
+		var url domain.UserURLs
+		err = rows.Scan(&url.ShortURL, &url.OriginalURL)
+		if err != nil {
+			return nil, fmt.Errorf("error when getting user rows: %w", err)
+		}
+		urls = append(urls, url)
+	}
+	return urls, nil
 }
 
 func (d *URLRepo) GetInitialData() (domain.URLStorage, error) {

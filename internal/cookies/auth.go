@@ -16,7 +16,7 @@ const (
 	MaxAge     = 3600
 )
 
-type SomeRepo interface {
+type UserRepo interface {
 	Create() (int, error)
 }
 
@@ -24,7 +24,7 @@ var hashKey = []byte("my-secret-hash-key") // 16 bytes or more
 
 var s = securecookie.New(hashKey, nil)
 
-func CreateUserMiddleware(l *logger.ZapLogger, repo SomeRepo) gin.HandlerFunc {
+func CreateUserMiddleware(l *logger.ZapLogger, repo UserRepo) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userCookie, err := c.Cookie(CookieName)
 		if err != nil || userCookie == "" {

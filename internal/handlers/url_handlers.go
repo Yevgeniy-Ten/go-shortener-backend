@@ -55,3 +55,21 @@ func (h *Handler) GetHandler(c *gin.Context) {
 	}
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
+func (h *Handler) GetAllMyUrls(c *gin.Context) {
+	var userID int
+	var err error
+	if userID, err = cookies.GetUserFromCookie(c); err != nil {
+		c.String(http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+	userUrls, err := h.Storage.URLS.GetUserURLs(userID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Error")
+		return
+	}
+	if len(userUrls) == 0 {
+		c.Status(http.StatusNoContent)
+		return
+	}
+	c.JSON(http.StatusOK, userUrls)
+}

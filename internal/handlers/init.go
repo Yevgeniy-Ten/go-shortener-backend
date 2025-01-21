@@ -60,5 +60,6 @@ func (h *Handler) CreateRouter(
 	r.POST("/api/shorten", h.ShortenURLHandler)
 	r.POST("/api/shorten/batch", h.ShortenURLSHandler)
 	r.GET("/:id", h.GetHandler)
+	r.GET("/api/user/urls", h.GetAllMyUrls)
 	return r
 }
