@@ -2,6 +2,7 @@ package cookies
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"shorter/internal/domain"
 	"shorter/internal/logger"
@@ -45,6 +46,7 @@ func CreateUserMiddleware(l *logger.ZapLogger, repo SomeRepo) gin.HandlerFunc {
 				return
 			}
 			c.SetCookie(CookieName, encoded, MaxAge, "/", "", false, true)
+			c.Request.Header.Set("Cookie", fmt.Sprintf("%s=%s", CookieName, encoded))
 		}
 		c.Next()
 	}
