@@ -22,6 +22,6 @@ vendor/
 .idea
 .vscode
 shortenertest
-./storage
+storage
 
 .env.example

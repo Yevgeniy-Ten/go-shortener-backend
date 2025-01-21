@@ -11,8 +11,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jackc/pgx/v5/stdlib"
-	"github.com/pressly/goose/v3"
 )
 
 const (
@@ -89,22 +87,7 @@ func (d *URLRepo) SaveBatch(values []domain.URLS) error {
 	return nil
 }
 
-func (d *URLRepo) Init(_ context.Context, conn *pgxpool.Pool) error {
-	db := stdlib.OpenDBFromPool(conn)
-	if err := goose.Up(db, "./migrations"); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (d *URLRepo) GetInitialData() (domain.Storage, error) {
+func (d *URLRepo) GetInitialData() (domain.URLStorage, error) {
 	d.logger.Log.Warn("GetInitialData is not implemented")
 	return nil, fmt.Errorf("not implemented")
-}
-
-func (d *URLRepo) Ping() error {
-	if d.conn == nil {
-		return errors.New("connection is nil")
-	}
-	return d.conn.Ping(context.Background())
 }

@@ -16,7 +16,7 @@ type FileStorage struct {
 	file    *os.File
 	writer  *bufio.Writer
 	scanner *bufio.Scanner
-	storage domain.Storage
+	storage domain.URLStorage
 	logger  *logger.ZapLogger
 }
 
@@ -33,13 +33,13 @@ func New(filePath string, l *logger.ZapLogger) (*FileStorage, error) {
 		file:    file,
 		writer:  bufio.NewWriter(file),
 		scanner: bufio.NewScanner(file),
-		storage: make(domain.Storage),
+		storage: make(domain.URLStorage),
 		logger:  l,
 	}, nil
 }
 
-func (f *FileStorage) GetInitialData() (s domain.Storage, err error) {
-	storage := make(domain.Storage)
+func (f *FileStorage) GetInitialData() (s domain.URLStorage, err error) {
+	storage := make(domain.URLStorage)
 	parseLine := func(line string) (string, string) {
 		return line[:8], line[9:]
 	}
@@ -86,9 +86,4 @@ func (f *FileStorage) writeToFile(newID, url string) error {
 func (f *FileStorage) SaveBatch(_ []domain.URLS) error {
 	f.logger.Log.Warn("SaveBatch is not implemented")
 	return fmt.Errorf("not implemented")
-}
-
-func (f *FileStorage) Ping() error {
-	f.logger.Log.Warn("Ping is not implemented")
-	return nil
 }

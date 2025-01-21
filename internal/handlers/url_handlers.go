@@ -22,7 +22,7 @@ func (h *Handler) PostHandler(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Некорректный ShortURL.")
 		return
 	}
-	id, err := h.Storage.Save(url)
+	id, err := h.Storage.URLS.Save(url)
 	if err != nil {
 		var duplicateError *urls.DuplicateError
 		if errors.As(err, &duplicateError) {
@@ -39,7 +39,7 @@ func (h *Handler) PostHandler(c *gin.Context) {
 
 func (h *Handler) GetHandler(c *gin.Context) {
 	id := c.Param("id")
-	url := h.Storage.GetURL(id)
+	url := h.Storage.URLS.GetURL(id)
 	if url == "" {
 		c.String(http.StatusBadRequest, "Not found")
 		return

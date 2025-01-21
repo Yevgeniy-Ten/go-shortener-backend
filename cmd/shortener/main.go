@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"shorter/config"
+	"shorter/internal/domain"
 	"shorter/internal/handlers"
 	"shorter/internal/logger"
 	"shorter/internal/storage"
@@ -29,6 +30,10 @@ func run() error {
 		return err
 	}
 	ctx := context.TODO()
+	s := domain.Storage{
+		User: nil,
+		URLS: nil,
+	}
 	db, pgxConnectErr := database.New(ctx, myLogger, cfg.DatabaseURL)
 	if pgxConnectErr != nil {
 		myLogger.Log.Info("Failed to connect to database", zap.Error(pgxConnectErr))
@@ -39,16 +44,18 @@ func run() error {
 		myLogger.Log.Info("Failed to create file storage", zap.Error(err))
 	}
 	defer fileStorage.Close()
-	var store *storage.ShortURLStorage
+
 	if db != nil {
-		store = storage.New(db.URLRepo)
+		s.URLS = storage.New(db.URLRepo)
+		s.User = db.UsersRepo
 	} else if fileStorage != nil {
-		store = storage.New(fileStorage)
+		s.URLS = storage.New(fileStorage)
 	} else {
-		store = storage.New(nil)
+		s.URLS = storage.New(nil)
 	}
 	defer fileStorage.Close()
-	h := handlers.InitHandlers(cfg.Config, store, myLogger)
+
+	h := handlers.InitHandlers(cfg.Config, s, myLogger, pgxConnectErr == nil)
 	myLogger.Log.Info("Server started", zap.String("address", cfg.Address))
 	return h.Run(cfg.Address)
 }

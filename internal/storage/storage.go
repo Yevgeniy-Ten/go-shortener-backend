@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"errors"
 	"shorter/internal/domain"
 	generateRandomId "shorter/pkg"
 	"sync"
@@ -10,19 +9,18 @@ import (
 type repository interface {
 	Save(values domain.URLS) error
 	GetURL(shortURL string) (string, error)
-	GetInitialData() (domain.Storage, error)
+	GetInitialData() (domain.URLStorage, error)
 	SaveBatch(values []domain.URLS) error
-	Ping() error
 }
 
 type ShortURLStorage struct {
-	storage domain.Storage
+	storage domain.URLStorage
 	mutex   *sync.Mutex
 	db      repository
 }
 
 func New(db repository) *ShortURLStorage {
-	storage := make(domain.Storage)
+	storage := make(domain.URLStorage)
 	if db != nil {
 		if initialData, err := db.GetInitialData(); err == nil {
 			storage = initialData
@@ -70,10 +68,4 @@ func (storage *ShortURLStorage) SaveBatch(urls []domain.URLS) error {
 		storage.storage[value.CorrelationID] = value.URL
 	}
 	return nil
-}
-func (storage *ShortURLStorage) Ping() error {
-	if storage.db == nil {
-		return errors.New("connection is nil")
-	}
-	return storage.db.Ping()
 }

@@ -34,7 +34,7 @@ func (h *Handler) ShortenURLHandler(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Некорректный ShortURL.")
 		return
 	}
-	id, err := h.Storage.Save(data.URL)
+	id, err := h.Storage.URLS.Save(data.URL)
 	if err != nil {
 		var duplicateError *urls.DuplicateError
 		if errors.As(err, &duplicateError) {
@@ -72,7 +72,7 @@ func (h *Handler) ShortenURLSHandler(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Read error")
 		return
 	}
-	err = h.Storage.SaveBatch(data)
+	err = h.Storage.URLS.SaveBatch(data)
 	if err != nil {
 		h.Log.Log.Error("Error when save ", zap.Error(err))
 		c.String(http.StatusInternalServerError, "Error")

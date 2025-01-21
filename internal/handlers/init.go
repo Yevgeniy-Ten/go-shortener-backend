@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"net/http"
+	"shorter/internal/cookies"
 	"shorter/internal/domain"
 	"shorter/internal/gzipper"
 	"shorter/internal/logger"
@@ -11,20 +12,13 @@ import (
 	"go.uber.org/zap"
 )
 
-type storage interface {
-	Save(value string) (string, error)
-	GetURL(shortURL string) string
-	SaveBatch(urls []domain.URLS) error
-	Ping() error
-}
-
 type Handler struct {
 	Config  *Config
-	Storage storage
+	Storage domain.Storage
 	Log     *logger.ZapLogger
 }
 
-func NewHandler(config *Config, s storage, log *logger.ZapLogger) *Handler {
+func NewHandler(config *Config, s domain.Storage, log *logger.ZapLogger) *Handler {
 	return &Handler{
 		Config:  config,
 		Storage: s,
@@ -32,16 +26,24 @@ func NewHandler(config *Config, s storage, log *logger.ZapLogger) *Handler {
 	}
 }
 
-func InitHandlers(config *Config, s storage, log *logger.ZapLogger) *gin.Engine {
+func InitHandlers(config *Config, s domain.Storage, log *logger.ZapLogger, withDatabase bool) *gin.Engine {
 	ctx := context.Background()
 	h := NewHandler(config, s, log)
 	ctx = h.Log.WithContextFields(ctx,
 		zap.String("Middleware", "RequestResponseInfoMiddleware"),
 	)
-	r := h.CreateRouter(gzipper.RequestResponseGzipMiddleware(),
-		logger.RequestResponseInfoMiddleware(ctx, h.Log))
+
+	middlewares := []gin.HandlerFunc{
+
+		gzipper.RequestResponseGzipMiddleware(),
+		logger.RequestResponseInfoMiddleware(ctx, h.Log),
+	}
+	if s.User != nil {
+		middlewares = append(middlewares, cookies.CreateUserMiddleware(h.Log, h.Storage.User))
+	}
+	r := h.CreateRouter(middlewares...)
 	r.GET("/ping", func(c *gin.Context) {
-		if err := h.Storage.Ping(); err != nil {
+		if !withDatabase {
 			c.Status(http.StatusInternalServerError)
 			return
 		}

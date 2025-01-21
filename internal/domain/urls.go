@@ -13,4 +13,8 @@ type URLS struct {
 	URL           string `json:"original_url"`
 }
 
-type Storage map[string]string
+type ResponseError struct {
+	Description string `json:"description"`
+}
+
+type URLStorage map[string]string
