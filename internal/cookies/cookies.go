@@ -1,7 +1,7 @@
 package cookies
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 	"shorter/internal/domain"
 	"shorter/internal/logger"
@@ -19,10 +19,9 @@ type SomeRepo interface {
 	Create() (int, error)
 }
 
-const hashKey = []byte("your-secret-hash-key") // 16 bytes or more
-const blockKey = []byte("your-block-key-16byt")
+var hashKey = []byte("my-secret-hash-key") // 16 bytes or more
 
-var s = securecookie.New(hashKey, blockKey)
+var s = securecookie.New(hashKey, nil)
 
 func CreateUserMiddleware(l *logger.ZapLogger, repo SomeRepo) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -39,7 +38,6 @@ func CreateUserMiddleware(l *logger.ZapLogger, repo SomeRepo) gin.HandlerFunc {
 			}
 			encoded, err := s.Encode(CookieName, userID)
 			if err != nil {
-				fmt.Println(err.Error())
 				c.JSON(http.StatusInternalServerError, domain.ResponseError{
 					Description: "Error encoding cookie",
 				})
@@ -49,8 +47,20 @@ func CreateUserMiddleware(l *logger.ZapLogger, repo SomeRepo) gin.HandlerFunc {
 			c.SetCookie(CookieName, encoded, MaxAge, "/", "", false, true)
 			c.Status(http.StatusUnauthorized)
 			c.Abort()
-
 		}
 		c.Next()
 	}
+}
+func GetUserFromCookie(c *gin.Context) (int, error) {
+	userCookie, err := c.Cookie(CookieName)
+
+	if err != nil {
+		return 0, errors.New("no cookie")
+	}
+
+	var userID int
+	if err := s.Decode(CookieName, userCookie, &userID); err != nil {
+		return 0, errors.New("error decoding cookie")
+	}
+	return userID, nil
 }

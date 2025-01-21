@@ -34,7 +34,6 @@ func InitHandlers(config *Config, s domain.Storage, log *logger.ZapLogger, withD
 	)
 
 	middlewares := []gin.HandlerFunc{
-
 		gzipper.RequestResponseGzipMiddleware(),
 		logger.RequestResponseInfoMiddleware(ctx, h.Log),
 	}
