@@ -24,17 +24,14 @@ func (h *Handler) PostHandler(c *gin.Context) {
 		return
 	}
 	var urlID string
+	var userID int
 	if h.Storage.User != nil {
-		var userID int
 		if userID, err = cookies.GetUserFromCookie(c); err != nil {
 			c.String(http.StatusUnauthorized, "Unauthorized")
 			return
 		}
-		urlID, err = h.Storage.URLS.SaveWithUser(url, userID)
-	} else {
-		urlID, err = h.Storage.URLS.Save(url)
 	}
-
+	urlID, err = h.Storage.URLS.Save(url, userID)
 	if err != nil {
 		var duplicateError *urls.DuplicateError
 		if errors.As(err, &duplicateError) {

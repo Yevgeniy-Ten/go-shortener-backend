@@ -36,16 +36,14 @@ func (h *Handler) ShortenURLHandler(c *gin.Context) {
 		return
 	}
 	var urlID string
+	var userID int
 	if h.Storage.User != nil {
-		var userID int
 		if userID, err = cookies.GetUserFromCookie(c); err != nil {
 			c.String(http.StatusUnauthorized, "Unauthorized")
 			return
 		}
-		urlID, err = h.Storage.URLS.SaveWithUser(data.URL, userID)
-	} else {
-		urlID, err = h.Storage.URLS.Save(data.URL)
 	}
+	urlID, err = h.Storage.URLS.Save(data.URL, userID)
 	if err != nil {
 		var duplicateError *urls.DuplicateError
 		if errors.As(err, &duplicateError) {
@@ -83,17 +81,14 @@ func (h *Handler) ShortenURLSHandler(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Read error")
 		return
 	}
-
+	var userID int
 	if h.Storage.User != nil {
-		var userID int
 		if userID, err = cookies.GetUserFromCookie(c); err != nil {
 			c.String(http.StatusUnauthorized, "Unauthorized")
 			return
 		}
-		err = h.Storage.URLS.SaveBatch(data, userID)
-	} else {
-		err = h.Storage.URLS.SaveBatch(data, 0)
 	}
+	err = h.Storage.URLS.SaveBatch(data, userID)
 	if err != nil {
 		h.Log.Log.Error("Error when save ", zap.Error(err))
 		c.String(http.StatusInternalServerError, "Error")

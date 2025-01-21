@@ -1,8 +1,7 @@
 package domain
 
 type urlStorage interface {
-	Save(value string) (string, error)
-	SaveWithUser(value string, userID int) (string, error)
+	Save(value string, userID int) (string, error)
 	GetURL(shortURL string) string
 	SaveBatch(urls []URLS, userID int) error
 }
