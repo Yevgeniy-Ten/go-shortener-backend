@@ -7,9 +7,9 @@ import (
 	"shorter/internal/domain"
 	"shorter/internal/handlers"
 	"shorter/internal/logger"
-	"shorter/internal/storage"
-	"shorter/internal/storage/database"
-	"shorter/internal/storage/filestorage"
+	"shorter/internal/urlstorage"
+	"shorter/internal/urlstorage/database"
+	"shorter/internal/urlstorage/filestorage"
 
 	"go.uber.org/zap"
 )
@@ -30,10 +30,6 @@ func run() error {
 		return err
 	}
 	ctx := context.TODO()
-	s := domain.Storage{
-		User: nil,
-		URLS: nil,
-	}
 	db, pgxConnectErr := database.New(ctx, myLogger, cfg.DatabaseURL)
 	if pgxConnectErr != nil {
 		myLogger.Log.Info("Failed to connect to database", zap.Error(pgxConnectErr))
@@ -44,14 +40,17 @@ func run() error {
 		myLogger.Log.Info("Failed to create file storage", zap.Error(err))
 	}
 	defer fileStorage.Close()
-
+	s := domain.Storage{
+		User: nil,
+		URLS: nil,
+	}
 	if db != nil {
-		s.URLS = storage.New(db.URLRepo)
+		s.URLS = urlstorage.New(db.URLRepo)
 		s.User = db.UsersRepo
 	} else if fileStorage != nil {
-		s.URLS = storage.New(fileStorage)
+		s.URLS = urlstorage.New(fileStorage)
 	} else {
-		s.URLS = storage.New(nil)
+		s.URLS = urlstorage.New(nil)
 	}
 	defer fileStorage.Close()
 

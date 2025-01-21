@@ -3,8 +3,8 @@ package database
 import (
 	"context"
 	"shorter/internal/logger"
-	"shorter/internal/storage/database/urls"
-	"shorter/internal/storage/database/users"
+	"shorter/internal/urlstorage/database/urls"
+	"shorter/internal/urlstorage/database/users"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"

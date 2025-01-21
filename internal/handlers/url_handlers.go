@@ -4,7 +4,8 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"shorter/internal/storage/database/urls"
+	"shorter/internal/cookies"
+	"shorter/internal/urlstorage/database/urls"
 	"shorter/pkg"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +23,18 @@ func (h *Handler) PostHandler(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Некорректный ShortURL.")
 		return
 	}
-	id, err := h.Storage.URLS.Save(url)
+	var urlID string
+	if h.Storage.User != nil {
+		var userID int
+		if userID, err = cookies.GetUserFromCookie(c); err != nil {
+			c.String(http.StatusUnauthorized, "Unauthorized")
+			return
+		}
+		urlID, err = h.Storage.URLS.SaveWithUser(url, userID)
+	} else {
+		urlID, err = h.Storage.URLS.Save(url)
+	}
+
 	if err != nil {
 		var duplicateError *urls.DuplicateError
 		if errors.As(err, &duplicateError) {
@@ -33,7 +45,7 @@ func (h *Handler) PostHandler(c *gin.Context) {
 		c.String(http.StatusInternalServerError, "Error")
 		return
 	}
-	respText := h.Config.ServerAddr + "/" + id
+	respText := h.Config.ServerAddr + "/" + urlID
 	c.String(http.StatusCreated, respText)
 }
 

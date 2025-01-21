@@ -55,7 +55,7 @@ func (f *FileStorage) GetURL(shortURL string) (string, error) {
 	return f.storage[shortURL], nil
 }
 
-func (f *FileStorage) Save(values domain.URLS) error {
+func (f *FileStorage) Save(values domain.URLS, _ int) error {
 	newID := values.CorrelationID
 	url := values.URL
 	err := f.writeToFile(newID, url)
@@ -83,7 +83,7 @@ func (f *FileStorage) writeToFile(newID, url string) error {
 	return nil
 }
 
-func (f *FileStorage) SaveBatch(_ []domain.URLS) error {
+func (f *FileStorage) SaveBatch(_ []domain.URLS, _ int) error {
 	f.logger.Log.Warn("SaveBatch is not implemented")
 	return fmt.Errorf("not implemented")
 }

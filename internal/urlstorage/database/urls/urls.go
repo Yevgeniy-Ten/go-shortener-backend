@@ -16,7 +16,7 @@ import (
 const (
 	SelectURLByShortURL = "SELECT url FROM urls WHERE short_url = $1"
 	SelectShortURLByURL = "SELECT short_url FROM urls WHERE url = $1"
-	InsertUrls          = "INSERT INTO urls (short_url, url) VALUES ($1, $2)"
+	InsertUrls          = "INSERT INTO urls (short_url, url, user_id) VALUES ($1, $2, $3)"
 )
 
 type URLRepo struct {
@@ -47,8 +47,8 @@ func (d *URLRepo) GetShortURL(url string) (string, error) {
 	return shortURL, nil
 }
 
-func (d *URLRepo) Save(values domain.URLS) error {
-	_, err := d.conn.Exec(context.TODO(), InsertUrls, values.CorrelationID, values.URL)
+func (d *URLRepo) Save(values domain.URLS, userID int) error {
+	_, err := d.conn.Exec(context.TODO(), InsertUrls, values.CorrelationID, values.URL, userID)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
@@ -62,11 +62,10 @@ func (d *URLRepo) Save(values domain.URLS) error {
 	}
 	return nil
 }
-
-func (d *URLRepo) SaveBatch(values []domain.URLS) error {
+func (d *URLRepo) SaveBatch(values []domain.URLS, userID int) error {
 	batch := &pgx.Batch{}
 	for _, value := range values {
-		batch.Queue(InsertUrls, value.CorrelationID, value.URL)
+		batch.Queue(InsertUrls, value.CorrelationID, value.URL, userID)
 	}
 
 	ctx := context.TODO()

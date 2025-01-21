@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users
     KEY
 );
 ALTER TABLE urls
-    ADD COLUMN user_id INTEGER NOT NULL REFERENCES users (ID);
+    ADD COLUMN user_id INTEGER REFERENCES users (ID);
 
 -- +goose StatementEnd
 

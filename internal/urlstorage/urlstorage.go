@@ -1,4 +1,4 @@
-package storage
+package urlstorage
 
 import (
 	"shorter/internal/domain"
@@ -7,10 +7,10 @@ import (
 )
 
 type repository interface {
-	Save(values domain.URLS) error
+	Save(values domain.URLS, userID int) error
 	GetURL(shortURL string) (string, error)
 	GetInitialData() (domain.URLStorage, error)
-	SaveBatch(values []domain.URLS) error
+	SaveBatch(values []domain.URLS, userID int) error
 }
 
 type ShortURLStorage struct {
@@ -43,7 +43,7 @@ func (storage *ShortURLStorage) Save(url string) (string, error) {
 		err = storage.db.Save(domain.URLS{
 			CorrelationID: newID,
 			URL:           url,
-		})
+		}, 0)
 		if err != nil {
 			return "", err
 		}
@@ -62,10 +62,28 @@ func (storage *ShortURLStorage) GetURL(id string) string {
 	}
 	return storage.storage[id]
 }
-func (storage *ShortURLStorage) SaveBatch(urls []domain.URLS) error {
-	_ = storage.db.SaveBatch(urls)
+func (storage *ShortURLStorage) SaveBatch(urls []domain.URLS, userID int) error {
+	_ = storage.db.SaveBatch(urls, userID)
 	for _, value := range urls {
 		storage.storage[value.CorrelationID] = value.URL
 	}
 	return nil
+}
+
+func (storage *ShortURLStorage) SaveWithUser(url string, userID int) (string, error) {
+	newID := generateRandomId.GenerateShortID()
+	var err error
+	storage.mutex.Lock()
+	defer storage.mutex.Unlock()
+	if storage.db != nil {
+		err = storage.db.Save(domain.URLS{
+			CorrelationID: newID,
+			URL:           url,
+		}, userID)
+		if err != nil {
+			return "", err
+		}
+	}
+	storage.storage[newID] = url
+	return newID, nil
 }

@@ -9,7 +9,7 @@ import (
 	"shorter/internal/domain"
 	"shorter/internal/gzipper"
 	"shorter/internal/handlers"
-	"shorter/internal/storage"
+	"shorter/internal/urlstorage"
 	"strings"
 	"testing"
 
@@ -41,7 +41,7 @@ func TestUrlHandlers(t *testing.T) {
 			statusCodeCheck{http.StatusCreated},
 		},
 	}
-	s := storage.New(nil)
+	s := urlstorage.New(nil)
 	h := handlers.NewHandler(
 		&handlers.Config{
 			ServerAddr: "http://localhost:8080",

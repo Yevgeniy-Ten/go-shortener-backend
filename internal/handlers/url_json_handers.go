@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"shorter/internal/cookies"
 	"shorter/internal/domain"
-	"shorter/internal/storage/database/urls"
+	"shorter/internal/urlstorage/database/urls"
 	"shorter/pkg"
 
 	"github.com/gin-gonic/gin"
@@ -34,7 +35,17 @@ func (h *Handler) ShortenURLHandler(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Некорректный ShortURL.")
 		return
 	}
-	id, err := h.Storage.URLS.Save(data.URL)
+	var urlID string
+	if h.Storage.User != nil {
+		var userID int
+		if userID, err = cookies.GetUserFromCookie(c); err != nil {
+			c.String(http.StatusUnauthorized, "Unauthorized")
+			return
+		}
+		urlID, err = h.Storage.URLS.SaveWithUser(data.URL, userID)
+	} else {
+		urlID, err = h.Storage.URLS.Save(data.URL)
+	}
 	if err != nil {
 		var duplicateError *urls.DuplicateError
 		if errors.As(err, &duplicateError) {
@@ -47,7 +58,7 @@ func (h *Handler) ShortenURLHandler(c *gin.Context) {
 		return
 	}
 	var responseData = ShortenResponse{
-		Result: h.Config.ServerAddr + "/" + id,
+		Result: h.Config.ServerAddr + "/" + urlID,
 	}
 	var buf bytes.Buffer
 
@@ -72,7 +83,17 @@ func (h *Handler) ShortenURLSHandler(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Read error")
 		return
 	}
-	err = h.Storage.URLS.SaveBatch(data)
+
+	if h.Storage.User != nil {
+		var userID int
+		if userID, err = cookies.GetUserFromCookie(c); err != nil {
+			c.String(http.StatusUnauthorized, "Unauthorized")
+			return
+		}
+		err = h.Storage.URLS.SaveBatch(data, userID)
+	} else {
+		err = h.Storage.URLS.SaveBatch(data, 0)
+	}
 	if err != nil {
 		h.Log.Log.Error("Error when save ", zap.Error(err))
 		c.String(http.StatusInternalServerError, "Error")
