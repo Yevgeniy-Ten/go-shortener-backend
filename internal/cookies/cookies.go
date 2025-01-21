@@ -45,7 +45,6 @@ func CreateUserMiddleware(l *logger.ZapLogger, repo SomeRepo) gin.HandlerFunc {
 				return
 			}
 			c.SetCookie(CookieName, encoded, MaxAge, "/", "", false, true)
-			c.Abort()
 		}
 		c.Next()
 	}
