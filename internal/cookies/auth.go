@@ -27,7 +27,6 @@ var s = securecookie.New(hashKey, nil)
 func CreateUserMiddleware(withDatabase bool, l *logger.ZapLogger, repo UserRepo) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !withDatabase {
-			l.Log.Info("middleware: User repo turn offed")
 			c.Next()
 			return
 		}
