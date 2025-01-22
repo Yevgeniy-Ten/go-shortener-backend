@@ -26,6 +26,11 @@ var s = securecookie.New(hashKey, nil)
 
 func CreateUserMiddleware(l *logger.ZapLogger, repo UserRepo) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if repo == nil {
+			l.Log.Info("middleware: UserRepo is nil")
+			c.Next()
+			return
+		}
 		userCookie, err := c.Cookie(CookieName)
 		if err != nil || userCookie == "" {
 			userID, err := repo.Create()

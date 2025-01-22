@@ -37,9 +37,6 @@ func InitHandlers(config *Config, s domain.Storage, log *logger.ZapLogger, withD
 		gzipper.RequestResponseGzipMiddleware(),
 		logger.RequestResponseInfoMiddleware(ctx, h.Log),
 	}
-	if withDatabase {
-		middlewares = append(middlewares, cookies.CreateUserMiddleware(h.Log, h.Storage.User))
-	}
 	r := h.CreateRouter(middlewares...)
 	r.GET("/ping", func(c *gin.Context) {
 		if !withDatabase {
@@ -56,9 +53,9 @@ func (h *Handler) CreateRouter(
 ) *gin.Engine {
 	r := gin.Default()
 	r.Use(middlewares...)
-	r.POST("/", h.PostHandler)
-	r.POST("/api/shorten", h.ShortenURLHandler)
-	r.POST("/api/shorten/batch", h.ShortenURLSHandler)
+	r.POST("/", cookies.CreateUserMiddleware(h.Log, h.Storage.User), h.PostHandler)
+	r.POST("/api/shorten", cookies.CreateUserMiddleware(h.Log, h.Storage.User), h.ShortenURLHandler)
+	r.POST("/api/shorten/batch", cookies.CreateUserMiddleware(h.Log, h.Storage.User), h.ShortenURLSHandler)
 	r.GET("/:id", h.GetHandler)
 	r.GET("/api/user/urls", h.GetAllMyUrls)
 	return r

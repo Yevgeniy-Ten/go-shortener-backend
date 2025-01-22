@@ -23,7 +23,7 @@ func NewConfig() (*Config, error) {
 			ServerAddr: "http://localhost:8080",
 		},
 		//DatabaseURL: "",
-		DatabaseURL: "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable",
+		//DatabaseURL: "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable",
 	}
 
 	parseFlags(config)
