@@ -12,7 +12,7 @@ type repository interface {
 	GetURL(shortURL string) (string, error)
 	GetInitialData() (domain.URLStorage, error)
 	SaveBatch(values []domain.URLS, userID int) error
-	GetUserURLs(userID int) ([]domain.UserURLs, error)
+	GetUserURLs(userID int, serverAdr string) ([]domain.UserURLs, error)
 }
 
 type ShortURLStorage struct {
@@ -21,9 +21,9 @@ type ShortURLStorage struct {
 	db      repository
 }
 
-func (s *ShortURLStorage) GetUserURLs(userID int) ([]domain.UserURLs, error) {
+func (s *ShortURLStorage) GetUserURLs(userID int, serverAdr string) ([]domain.UserURLs, error) {
 	if s.db != nil {
-		return s.db.GetUserURLs(userID)
+		return s.db.GetUserURLs(userID, serverAdr)
 	}
 	return nil, errors.New("not implemented")
 }

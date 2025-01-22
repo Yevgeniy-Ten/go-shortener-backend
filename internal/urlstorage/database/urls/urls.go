@@ -87,7 +87,7 @@ func (d *URLRepo) SaveBatch(values []domain.URLS, userID int) error {
 	return nil
 }
 
-func (d *URLRepo) GetUserURLs(userID int) ([]domain.UserURLs, error) {
+func (d *URLRepo) GetUserURLs(userID int, serverAdr string) ([]domain.UserURLs, error) {
 	rows, err := d.conn.Query(context.Background(), UserURLs, userID)
 	if err != nil {
 		return nil, err
@@ -100,6 +100,7 @@ func (d *URLRepo) GetUserURLs(userID int) ([]domain.UserURLs, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error when getting user rows: %w", err)
 		}
+		url.ShortURL = serverAdr + url.ShortURL
 		urls = append(urls, url)
 	}
 	return urls, nil

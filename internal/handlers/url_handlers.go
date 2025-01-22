@@ -62,7 +62,7 @@ func (h *Handler) GetAllMyUrls(c *gin.Context) {
 		c.String(http.StatusUnauthorized, "Unauthorized")
 		return
 	}
-	userUrls, err := h.Storage.URLS.GetUserURLs(userID)
+	userUrls, err := h.Storage.URLS.GetUserURLs(userID, h.Config.ServerAddr+"/")
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Error")
 		return

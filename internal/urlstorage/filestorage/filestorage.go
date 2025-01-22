@@ -89,6 +89,6 @@ func (f *FileStorage) SaveBatch(_ []domain.URLS, _ int) error {
 	return errors.New("not implemented")
 }
 
-func (f *FileStorage) GetUserURLs(_ int) ([]domain.UserURLs, error) {
+func (f *FileStorage) GetUserURLs(_ int, _ string) ([]domain.UserURLs, error) {
 	return nil, errors.New("not implemented")
 }
