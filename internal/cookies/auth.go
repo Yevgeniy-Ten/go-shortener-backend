@@ -24,10 +24,10 @@ var hashKey = []byte("my-secret-hash-key") // 16 bytes or more
 
 var s = securecookie.New(hashKey, nil)
 
-func CreateUserMiddleware(l *logger.ZapLogger, repo UserRepo) gin.HandlerFunc {
+func CreateUserMiddleware(withDatabase bool, l *logger.ZapLogger, repo UserRepo) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if repo == nil {
-			l.Log.Info("middleware: UserRepo is nil")
+		if !withDatabase {
+			l.Log.Info("middleware: User repo turn offed")
 			c.Next()
 			return
 		}

@@ -37,7 +37,7 @@ func InitHandlers(config *Config, s domain.Storage, log *logger.ZapLogger, withD
 		gzipper.RequestResponseGzipMiddleware(),
 		logger.RequestResponseInfoMiddleware(ctx, h.Log),
 	}
-	r := h.CreateRouter(middlewares...)
+	r := h.CreateRouter(withDatabase, middlewares...)
 	r.GET("/ping", func(c *gin.Context) {
 		if !withDatabase {
 			c.Status(http.StatusInternalServerError)
@@ -48,14 +48,14 @@ func InitHandlers(config *Config, s domain.Storage, log *logger.ZapLogger, withD
 	return r
 }
 
-func (h *Handler) CreateRouter(
+func (h *Handler) CreateRouter(withDatabase bool,
 	middlewares ...gin.HandlerFunc,
 ) *gin.Engine {
 	r := gin.Default()
 	r.Use(middlewares...)
-	r.POST("/", cookies.CreateUserMiddleware(h.Log, h.Storage.User), h.PostHandler)
-	r.POST("/api/shorten", cookies.CreateUserMiddleware(h.Log, h.Storage.User), h.ShortenURLHandler)
-	r.POST("/api/shorten/batch", cookies.CreateUserMiddleware(h.Log, h.Storage.User), h.ShortenURLSHandler)
+	r.POST("/", cookies.CreateUserMiddleware(withDatabase, h.Log, h.Storage.User), h.PostHandler)
+	r.POST("/api/shorten", cookies.CreateUserMiddleware(withDatabase, h.Log, h.Storage.User), h.ShortenURLHandler)
+	r.POST("/api/shorten/batch", cookies.CreateUserMiddleware(withDatabase, h.Log, h.Storage.User), h.ShortenURLSHandler)
 	r.GET("/:id", h.GetHandler)
 	r.GET("/api/user/urls", h.GetAllMyUrls)
 	return r
