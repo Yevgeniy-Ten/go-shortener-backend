@@ -90,7 +90,7 @@ func (h *Handler) ShortenURLSHandler(c *gin.Context) {
 	}
 	err = h.Storage.URLS.SaveBatch(data, userID)
 	if err != nil {
-		h.Log.Log.Error("Error when save ", zap.Error(err))
+		h.l.Log.Error("Error when save ", zap.Error(err))
 		c.String(http.StatusInternalServerError, "Error")
 	}
 	var responseData []domain.ShortenerBatchResponse
@@ -101,4 +101,23 @@ func (h *Handler) ShortenURLSHandler(c *gin.Context) {
 		})
 	}
 	c.JSON(http.StatusCreated, responseData)
+}
+func (h *Handler) DeleteMyUrls(c *gin.Context) {
+	var userID, err = cookies.GetUserFromCookie(c)
+	if err != nil {
+		c.String(http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+	var correlationIDS []string
+	if err := c.ShouldBindJSON(&correlationIDS); err != nil {
+		c.String(http.StatusBadRequest, "Bad request")
+		return
+	}
+	go func() {
+		err := h.Storage.URLS.DeleteURLs(correlationIDS, userID)
+		if err != nil {
+			h.l.Log.Error("Error when delete urls", zap.Error(err))
+		}
+	}()
+	c.Status(http.StatusAccepted)
 }

@@ -38,7 +38,7 @@ func (h *Handler) PostHandler(c *gin.Context) {
 			c.String(http.StatusConflict, h.Config.ServerAddr+"/"+duplicateError.ShortURL)
 			return
 		}
-		h.Log.Log.Error("Error when save", zap.Error(err))
+		h.l.Log.Error("Error when save", zap.Error(err))
 		c.String(http.StatusInternalServerError, "Error")
 		return
 	}
@@ -48,7 +48,17 @@ func (h *Handler) PostHandler(c *gin.Context) {
 
 func (h *Handler) GetHandler(c *gin.Context) {
 	id := c.Param("id")
-	url := h.Storage.URLS.GetURL(id)
+	url, err := h.Storage.URLS.GetURL(id)
+	if err != nil {
+		var urlIsDeletedError *urls.URLIsDeletedError
+		if errors.As(err, &urlIsDeletedError) {
+			c.String(http.StatusGone, "URL is deleted")
+			return
+		}
+		h.l.Log.Error("Error when get", zap.Error(err))
+		c.String(http.StatusNotFound, "Not found")
+		return
+	}
 	if url == "" {
 		c.String(http.StatusBadRequest, "Not found")
 		return

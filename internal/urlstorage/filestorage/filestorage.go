@@ -92,3 +92,7 @@ func (f *FileStorage) SaveBatch(_ []domain.URLS, _ int) error {
 func (f *FileStorage) GetUserURLs(_ int, _ string) ([]domain.UserURLs, error) {
 	return nil, errors.New("not implemented")
 }
+func (f *FileStorage) DeleteURLs(_ []string, _ int) error {
+	f.logger.Log.Warn("DeleteURLs is not implemented")
+	return errors.New("not implemented")
+}

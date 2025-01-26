@@ -14,10 +14,11 @@ import (
 )
 
 const (
-	SelectURLByShortURL = "SELECT url FROM urls WHERE short_url = $1"
-	SelectShortURLByURL = "SELECT short_url FROM urls WHERE url = $1"
-	InsertUrls          = "INSERT INTO urls (short_url, url, user_id) VALUES ($1, $2, $3)"
-	UserURLs            = "SELECT short_url, url FROM urls WHERE user_id = $1"
+	SelectURLByShortURL     = "SELECT url, is_deleted FROM urls WHERE short_url = $1"
+	SelectShortURLByURL     = "SELECT short_url FROM urls WHERE url = $1"
+	InsertUrls              = "INSERT INTO urls (short_url, url, user_id) VALUES ($1, $2, $3)"
+	UserURLs                = "SELECT short_url, url FROM urls WHERE user_id = $1"
+	UpdateDeleteFlagInBatch = "UPDATE urls SET is_deleted =true WHERE short_url = ANY($1) AND user_id = $2"
 )
 
 type URLRepo struct {
@@ -31,16 +32,19 @@ func NewURLRepo(conn *pgxpool.Pool, l *logger.ZapLogger) *URLRepo {
 
 func (d *URLRepo) GetURL(shortURL string) (string, error) {
 	var url string
-	err := d.conn.QueryRow(context.Background(), SelectURLByShortURL, shortURL).Scan(&url)
+	var isDeleted bool
+	err := d.conn.QueryRow(context.Background(), SelectURLByShortURL, shortURL).Scan(&url, &isDeleted)
 	if err != nil {
 		return "", err
+	}
+	if isDeleted {
+		return "", NewURLIsDeletedError(shortURL)
 	}
 	return url, nil
 }
 
 func (d *URLRepo) GetShortURL(url string) (string, error) {
 	var shortURL string
-
 	err := d.conn.QueryRow(context.Background(), SelectShortURLByURL, url).Scan(&shortURL)
 	if err != nil {
 		return "", err
@@ -85,6 +89,13 @@ func (d *URLRepo) SaveBatch(values []domain.URLS, userID int) error {
 		}
 	}
 	return nil
+}
+
+func (d *URLRepo) DeleteURLs(correlationIDS []string,
+	userID int,
+) error {
+	_, err := d.conn.Exec(context.TODO(), UpdateDeleteFlagInBatch, correlationIDS, userID)
+	return fmt.Errorf("error when deleting urls: %w", err)
 }
 
 func (d *URLRepo) GetUserURLs(userID int, serverAdr string) ([]domain.UserURLs, error) {

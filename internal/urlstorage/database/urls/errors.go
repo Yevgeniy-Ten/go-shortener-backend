@@ -15,3 +15,17 @@ func NewDuplicateError(existingURL, shortURL string) error {
 		ShortURL:    shortURL,
 	}
 }
+
+type URLIsDeletedError struct {
+	ShortURL string
+}
+
+func NewURLIsDeletedError(shortURL string) error {
+	return &URLIsDeletedError{
+		ShortURL: shortURL,
+	}
+}
+
+func (ud *URLIsDeletedError) Error() string {
+	return "ShortURL deleted"
+}

@@ -15,27 +15,27 @@ import (
 type Handler struct {
 	Config  *Config
 	Storage domain.Storage
-	Log     *logger.ZapLogger
+	l       *logger.ZapLogger
 }
 
 func NewHandler(config *Config, s domain.Storage, log *logger.ZapLogger) *Handler {
 	return &Handler{
 		Config:  config,
 		Storage: s,
-		Log:     log,
+		l:       log,
 	}
 }
 
 func InitHandlers(config *Config, s domain.Storage, log *logger.ZapLogger, withDatabase bool) *gin.Engine {
 	ctx := context.Background()
 	h := NewHandler(config, s, log)
-	ctx = h.Log.WithContextFields(ctx,
+	ctx = h.l.WithContextFields(ctx,
 		zap.String("Middleware", "RequestResponseInfoMiddleware"),
 	)
 
 	middlewares := []gin.HandlerFunc{
 		gzipper.RequestResponseGzipMiddleware(),
-		logger.RequestResponseInfoMiddleware(ctx, h.Log),
+		logger.RequestResponseInfoMiddleware(ctx, h.l),
 	}
 	r := h.CreateRouter(withDatabase, middlewares...)
 	r.GET("/ping", func(c *gin.Context) {
@@ -53,10 +53,11 @@ func (h *Handler) CreateRouter(withDatabase bool,
 ) *gin.Engine {
 	r := gin.Default()
 	r.Use(middlewares...)
-	r.POST("/", cookies.CreateUserMiddleware(withDatabase, h.Log, h.Storage.User), h.PostHandler)
-	r.POST("/api/shorten", cookies.CreateUserMiddleware(withDatabase, h.Log, h.Storage.User), h.ShortenURLHandler)
-	r.POST("/api/shorten/batch", cookies.CreateUserMiddleware(withDatabase, h.Log, h.Storage.User), h.ShortenURLSHandler)
+	r.POST("/", cookies.CreateUserMiddleware(withDatabase, h.l, h.Storage.User), h.PostHandler)
+	r.POST("/api/shorten", cookies.CreateUserMiddleware(withDatabase, h.l, h.Storage.User), h.ShortenURLHandler)
+	r.POST("/api/shorten/batch", cookies.CreateUserMiddleware(withDatabase, h.l, h.Storage.User), h.ShortenURLSHandler)
 	r.GET("/:id", h.GetHandler)
 	r.GET("/api/user/urls", h.GetAllMyUrls)
+	r.DELETE("/api/user/urls", h.DeleteMyUrls)
 	return r
 }

@@ -13,19 +13,13 @@ type repository interface {
 	GetInitialData() (domain.URLStorage, error)
 	SaveBatch(values []domain.URLS, userID int) error
 	GetUserURLs(userID int, serverAdr string) ([]domain.UserURLs, error)
+	DeleteURLs(correlationIDS []string, userID int) error
 }
 
 type ShortURLStorage struct {
 	storage domain.URLStorage
 	mutex   *sync.Mutex
 	db      repository
-}
-
-func (s *ShortURLStorage) GetUserURLs(userID int, serverAdr string) ([]domain.UserURLs, error) {
-	if s.db != nil {
-		return s.db.GetUserURLs(userID, serverAdr)
-	}
-	return nil, errors.New("not implemented")
 }
 
 func New(db repository) *ShortURLStorage {
@@ -41,6 +35,19 @@ func New(db repository) *ShortURLStorage {
 		mutex:   &sync.Mutex{},
 		db:      db,
 	}
+}
+func (s *ShortURLStorage) DeleteURLs(correlationIDS []string, userID int) error {
+	if s.db != nil {
+		return s.db.DeleteURLs(correlationIDS, userID)
+	}
+	return errors.New("not implemented")
+}
+
+func (s *ShortURLStorage) GetUserURLs(userID int, serverAdr string) ([]domain.UserURLs, error) {
+	if s.db != nil {
+		return s.db.GetUserURLs(userID, serverAdr)
+	}
+	return nil, errors.New("not implemented")
 }
 
 func (s *ShortURLStorage) Save(url string, userID int) (string, error) {
@@ -61,15 +68,15 @@ func (s *ShortURLStorage) Save(url string, userID int) (string, error) {
 	return newID, nil
 }
 
-func (s *ShortURLStorage) GetURL(id string) string {
+func (s *ShortURLStorage) GetURL(id string) (string, error) {
 	if s.db != nil {
 		url, err := s.db.GetURL(id)
 		if err != nil {
-			return ""
+			return "", err
 		}
-		return url
+		return url, nil
 	}
-	return s.storage[id]
+	return s.storage[id], nil
 }
 func (s *ShortURLStorage) SaveBatch(urls []domain.URLS, userID int) error {
 	_ = s.db.SaveBatch(urls, userID)
