@@ -2,6 +2,7 @@ package filestorage
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -84,7 +85,7 @@ func (f *FileStorage) writeToFile(newID, url string) error {
 	return nil
 }
 
-func (f *FileStorage) SaveBatch(_ []domain.URLS, _ int) error {
+func (f *FileStorage) SaveBatch(_ context.Context, _ []domain.URLS, _ int) error {
 	f.logger.Log.Warn("SaveBatch is not implemented")
 	return errors.New("not implemented")
 }

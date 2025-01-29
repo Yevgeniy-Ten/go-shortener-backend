@@ -35,8 +35,10 @@ func (h *Handler) ShortenURLHandler(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Некорректный ShortURL.")
 		return
 	}
-	var urlID string
-	var userID int
+	var (
+		urlID  string
+		userID int
+	)
 	if h.Storage.User != nil {
 		if userID, err = cookies.GetUserFromCookie(c); err != nil {
 			c.String(http.StatusUnauthorized, "Unauthorized")

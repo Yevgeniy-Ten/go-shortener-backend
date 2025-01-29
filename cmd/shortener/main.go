@@ -30,9 +30,14 @@ func run() error {
 		return err
 	}
 	ctx := context.TODO()
-	db, pgxConnectErr := database.New(ctx, myLogger, cfg.DatabaseURL)
+	db, pgxConnectErr := database.New(ctx, myLogger, cfg.Config.DatabaseURL)
 	if pgxConnectErr != nil {
-		myLogger.Log.Info("Failed to connect to database", zap.Error(pgxConnectErr))
+		if cfg.Config.DatabaseURL == "" {
+			myLogger.Log.Warn("Database URL is empty")
+		} else {
+			cfg.Config.DatabaseError = true
+			myLogger.Log.Error("Failed to connect to database", zap.Error(pgxConnectErr))
+		}
 	}
 	defer db.Close(ctx)
 	fileStorage, err := filestorage.New(cfg.FilePath, myLogger)
@@ -54,7 +59,7 @@ func run() error {
 	}
 	defer fileStorage.Close()
 
-	h := handlers.InitHandlers(cfg.Config, s, myLogger, pgxConnectErr == nil)
+	h := handlers.InitHandlers(cfg.Config, s, myLogger)
 	myLogger.Log.Info("Server started", zap.String("address", cfg.Address))
 	return h.Run(cfg.Address)
 }

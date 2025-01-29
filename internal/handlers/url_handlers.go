@@ -23,8 +23,10 @@ func (h *Handler) PostHandler(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Некорректный ShortURL.")
 		return
 	}
-	var urlID string
-	var userID int
+	var (
+		urlID  string
+		userID int
+	)
 	if h.Storage.User != nil {
 		if userID, err = cookies.GetUserFromCookie(c); err != nil {
 			c.String(http.StatusUnauthorized, "Unauthorized")
@@ -65,7 +67,7 @@ func (h *Handler) GetHandler(c *gin.Context) {
 	}
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
-func (h *Handler) GetAllMyUrls(c *gin.Context) {
+func (h *Handler) GetUserUrls(c *gin.Context) {
 	var userID int
 	var err error
 	if userID, err = cookies.GetUserFromCookie(c); err != nil {

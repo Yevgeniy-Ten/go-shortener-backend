@@ -13,14 +13,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const (
-	SelectURLByShortURL     = "SELECT url, is_deleted FROM urls WHERE short_url = $1"
-	SelectShortURLByURL     = "SELECT short_url FROM urls WHERE url = $1"
-	InsertUrls              = "INSERT INTO urls (short_url, url, user_id) VALUES ($1, $2, $3)"
-	UserURLs                = "SELECT short_url, url FROM urls WHERE user_id = $1"
-	UpdateDeleteFlagInBatch = "UPDATE urls SET is_deleted =true WHERE short_url = ANY($1) AND user_id = $2"
-)
-
 type URLRepo struct {
 	conn   *pgxpool.Pool
 	logger *logger.ZapLogger
@@ -29,6 +21,8 @@ type URLRepo struct {
 func NewURLRepo(conn *pgxpool.Pool, l *logger.ZapLogger) *URLRepo {
 	return &URLRepo{conn: conn, logger: l}
 }
+
+const SelectURLByShortURL = "SELECT url, is_deleted FROM urls WHERE short_url = $1"
 
 func (d *URLRepo) GetURL(shortURL string) (string, error) {
 	var url string
@@ -43,6 +37,10 @@ func (d *URLRepo) GetURL(shortURL string) (string, error) {
 	return url, nil
 }
 
+const (
+	SelectShortURLByURL = "SELECT short_url FROM urls WHERE url = $1"
+)
+
 func (d *URLRepo) GetShortURL(url string) (string, error) {
 	var shortURL string
 	err := d.conn.QueryRow(context.Background(), SelectShortURLByURL, url).Scan(&shortURL)
@@ -51,6 +49,8 @@ func (d *URLRepo) GetShortURL(url string) (string, error) {
 	}
 	return shortURL, nil
 }
+
+const InsertUrls = "INSERT INTO urls (short_url, url, user_id) VALUES ($1, $2, $3)"
 
 func (d *URLRepo) Save(values domain.URLS, userID int) error {
 	_, err := d.conn.Exec(context.TODO(), InsertUrls, values.CorrelationID, values.URL, userID)
@@ -67,13 +67,12 @@ func (d *URLRepo) Save(values domain.URLS, userID int) error {
 	}
 	return nil
 }
-func (d *URLRepo) SaveBatch(values []domain.URLS, userID int) error {
+func (d *URLRepo) SaveBatch(
+	ctx context.Context, values []domain.URLS, userID int) error {
 	batch := &pgx.Batch{}
 	for _, value := range values {
 		batch.Queue(InsertUrls, value.CorrelationID, value.URL, userID)
 	}
-
-	ctx := context.TODO()
 
 	br := d.conn.SendBatch(ctx, batch)
 	defer func() {
@@ -91,12 +90,16 @@ func (d *URLRepo) SaveBatch(values []domain.URLS, userID int) error {
 	return nil
 }
 
+const UpdateDeleteFlagInBatch = "UPDATE urls SET is_deleted =true WHERE short_url = ANY($1) AND user_id = $2"
+
 func (d *URLRepo) DeleteURLs(correlationIDS []string,
 	userID int,
 ) error {
 	_, err := d.conn.Exec(context.TODO(), UpdateDeleteFlagInBatch, correlationIDS, userID)
 	return fmt.Errorf("error when deleting urls: %w", err)
 }
+
+const UserURLs = "SELECT short_url, url FROM urls WHERE user_id = $1"
 
 func (d *URLRepo) GetUserURLs(userID int, serverAdr string) ([]domain.UserURLs, error) {
 	rows, err := d.conn.Query(context.Background(), UserURLs, userID)

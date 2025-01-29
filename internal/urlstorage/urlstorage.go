@@ -1,6 +1,7 @@
 package urlstorage
 
 import (
+	"context"
 	"errors"
 	"shorter/internal/domain"
 	generateRandomId "shorter/pkg"
@@ -11,7 +12,7 @@ type repository interface {
 	Save(values domain.URLS, userID int) error
 	GetURL(shortURL string) (string, error)
 	GetInitialData() (domain.URLStorage, error)
-	SaveBatch(values []domain.URLS, userID int) error
+	SaveBatch(ctx context.Context, values []domain.URLS, userID int) error
 	GetUserURLs(userID int, serverAdr string) ([]domain.UserURLs, error)
 	DeleteURLs(correlationIDS []string, userID int) error
 }
@@ -79,7 +80,8 @@ func (s *ShortURLStorage) GetURL(id string) (string, error) {
 	return s.storage[id], nil
 }
 func (s *ShortURLStorage) SaveBatch(urls []domain.URLS, userID int) error {
-	_ = s.db.SaveBatch(urls, userID)
+	ctx := context.TODO()
+	_ = s.db.SaveBatch(ctx, urls, userID)
 	for _, value := range urls {
 		s.storage[value.CorrelationID] = value.URL
 	}

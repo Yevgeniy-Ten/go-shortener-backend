@@ -51,7 +51,7 @@ func TestUrlHandlers(t *testing.T) {
 		},
 		nil,
 	)
-	r := h.CreateRouter(false, gzipper.RequestResponseGzipMiddleware())
+	r := h.CreateRouter(gzipper.RequestResponseGzipMiddleware())
 
 	createURL := func(value, contentType, url string) *http.Response {
 		request := httptest.NewRequest("POST", url, strings.NewReader(value))

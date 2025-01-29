@@ -20,10 +20,10 @@ func NewConfig() (*Config, error) {
 		Address:  ":8080",
 		FilePath: "",
 		Config: &handlers.Config{
-			ServerAddr: "http://localhost:8080",
+			ServerAddr:  "http://localhost:8080",
+			DatabaseURL: "",
+			//  DatabaseURL: "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable",
 		},
-		//DatabaseURL: "",
-		DatabaseURL: "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable",
 	}
 
 	parseFlags(config)
@@ -50,6 +50,9 @@ func parseEnv(config *Config) error {
 	if envConfig.ServerAddr != "" {
 		config.Config.ServerAddr = envConfig.ServerAddr
 	}
+	if envConfig.DatabaseURL != "" {
+		config.Config.DatabaseURL = envConfig.DatabaseURL
+	}
 	return nil
 }
 
@@ -57,6 +60,6 @@ func parseFlags(config *Config) {
 	flag.StringVar(&config.Address, "a", config.Address, "address for server")
 	flag.StringVar(&config.Config.ServerAddr, "b", config.Config.ServerAddr, "address for link")
 	flag.StringVar(&config.FilePath, "f", config.FilePath, "path to file")
-	flag.StringVar(&config.DatabaseURL, "d", config.DatabaseURL, "path to file")
+	flag.StringVar(&config.Config.DatabaseURL, "d", config.Config.DatabaseURL, "path to file")
 	flag.Parse()
 }
