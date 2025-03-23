@@ -20,9 +20,9 @@ func NewConfig() (*Config, error) {
 		Address:  ":8080",
 		FilePath: "",
 		Config: &handlers.Config{
-			ServerAddr: "http://localhost:8080",
-			//DatabaseURL: "",
-			DatabaseURL: "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable",
+			ServerAddr:  "http://localhost:8080",
+			DatabaseURL: "",
+			//DatabaseURL: "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable",
 		},
 	}
 
