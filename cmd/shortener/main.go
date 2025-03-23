@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"shorter/config"
@@ -13,8 +12,11 @@ import (
 	"shorter/internal/urlstorage/database"
 	"shorter/internal/urlstorage/filestorage"
 
-	"go.uber.org/zap"
+	"github.com/gin-gonic/gin"
+
 	_ "net/http/pprof"
+
+	"go.uber.org/zap"
 )
 
 func main() {
