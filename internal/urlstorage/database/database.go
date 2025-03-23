@@ -11,16 +11,19 @@ import (
 	"github.com/pressly/goose/v3"
 )
 
+// Database is a struct that contains the necessary settings
 type Database struct {
 	conn      *pgxpool.Pool
 	URLRepo   *urls.URLRepo
 	UsersRepo *users.UsersRepo
 }
 
+// Close closes the connection to the database
 func (d *Database) Close(_ context.Context) {
 	d.conn.Close()
 }
 
+// New creates a new database connection
 func New(ctx context.Context, l *logger.ZapLogger, databasePath string) (*Database, error) {
 	conn, err := pgxpool.New(ctx, databasePath)
 	if err != nil {
@@ -40,6 +43,7 @@ func New(ctx context.Context, l *logger.ZapLogger, databasePath string) (*Databa
 	}, nil
 }
 
+// Init initializes the database with migrations
 func Init(_ context.Context, conn *pgxpool.Pool) error {
 	db := stdlib.OpenDBFromPool(conn)
 	if err := goose.Up(db, "./migrations"); err != nil {

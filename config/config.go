@@ -1,3 +1,4 @@
+// Description: Config for running the server
 package config
 
 import (
@@ -7,22 +8,22 @@ import (
 	"github.com/caarlos0/env/v11"
 )
 
+// Config struct
 type Config struct {
-	Address     string `env:"SERVER_ADDRESS"`
-	FilePath    string `env:"FILE_STORAGE_PATH"`
-	ServerAddr  string `env:"SERVER_URL"`
-	DatabaseURL string `env:"DATABASE_DSN"`
+	Address     string `env:"SERVER_ADDRESS"`    // Address for server
+	FilePath    string `env:"FILE_STORAGE_PATH"` // Optional if you want to save in file
+	ServerAddr  string `env:"SERVER_URL"`        // Host for returned link with short url
+	DatabaseURL string `env:"DATABASE_DSN"`      // Optional if you want to save in database
 	Config      *handlers.Config
 }
 
+// NewConfig creates a new config
 func NewConfig() (*Config, error) {
 	config := &Config{
 		Address:  ":8080",
 		FilePath: "",
 		Config: &handlers.Config{
-			ServerAddr:  "http://localhost:8080",
-			DatabaseURL: "",
-			//  DatabaseURL: "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable",
+			ServerAddr: "http://localhost:8080",
 		},
 	}
 
@@ -40,7 +41,6 @@ func parseEnv(config *Config) error {
 		return err
 	}
 
-	// Обновляем конфигурацию только если переменные окружения заданы
 	if envConfig.Address != "" {
 		config.Address = envConfig.Address
 	}

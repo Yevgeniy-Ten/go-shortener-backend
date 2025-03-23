@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// GenerateShortID generates a random string of length 8
 func GenerateShortID() string {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	const length = 8

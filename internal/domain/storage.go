@@ -11,6 +11,10 @@ type urlStorage interface {
 type userStorage interface {
 	Create() (int, error)
 }
+
+// Storage struct in project
+//
+//go:generate mockgen -source=internal/domain/storage.go -destination=internal/handlers/mocks/mock_storage.go -package=handlers_mocks Storage
 type Storage struct {
 	URLS urlStorage
 	User userStorage

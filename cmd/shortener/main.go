@@ -1,8 +1,11 @@
+// Shortener url service
+// Used for short urls
 package main
 
 import (
 	"context"
 	"log"
+	"net/http"
 	"shorter/config"
 	"shorter/internal/domain"
 	"shorter/internal/handlers"
@@ -10,6 +13,10 @@ import (
 	"shorter/internal/urlstorage"
 	"shorter/internal/urlstorage/database"
 	"shorter/internal/urlstorage/filestorage"
+
+	"github.com/gin-gonic/gin"
+
+	_ "net/http/pprof"
 
 	"go.uber.org/zap"
 )
@@ -60,6 +67,7 @@ func run() error {
 	defer fileStorage.Close()
 
 	h := handlers.InitHandlers(cfg.Config, s, myLogger)
+	h.GET("/debug/pprof/*any", gin.WrapH(http.DefaultServeMux))
 	myLogger.Log.Info("Server started", zap.String("address", cfg.Address))
 	return h.Run(cfg.Address)
 }
