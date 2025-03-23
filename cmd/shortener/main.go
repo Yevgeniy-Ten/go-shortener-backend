@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"github.com/gin-gonic/gin"
 	"log"
+	"net/http"
 	"shorter/config"
 	"shorter/internal/domain"
 	"shorter/internal/handlers"
@@ -12,6 +14,7 @@ import (
 	"shorter/internal/urlstorage/filestorage"
 
 	"go.uber.org/zap"
+	_ "net/http/pprof"
 )
 
 func main() {
@@ -60,6 +63,7 @@ func run() error {
 	defer fileStorage.Close()
 
 	h := handlers.InitHandlers(cfg.Config, s, myLogger)
+	h.GET("/debug/pprof/*any", gin.WrapH(http.DefaultServeMux))
 	myLogger.Log.Info("Server started", zap.String("address", cfg.Address))
 	return h.Run(cfg.Address)
 }

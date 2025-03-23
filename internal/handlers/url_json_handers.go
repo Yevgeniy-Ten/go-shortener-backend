@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -9,6 +8,7 @@ import (
 	"shorter/internal/domain"
 	"shorter/internal/urlstorage/database/urls"
 	"shorter/pkg"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -20,13 +20,7 @@ type ShortenResponse struct {
 
 func (h *Handler) ShortenURLHandler(c *gin.Context) {
 	var data domain.ShortenRequest
-	body, err := c.GetRawData()
-
-	if err != nil {
-		c.String(http.StatusBadRequest, "Read error")
-		return
-	}
-	if err := json.Unmarshal(body, &data); err != nil {
+	if err := json.NewDecoder(c.Request.Body).Decode(&data); err != nil {
 		c.String(http.StatusBadRequest, "Read error")
 		return
 	}
@@ -38,6 +32,7 @@ func (h *Handler) ShortenURLHandler(c *gin.Context) {
 	var (
 		urlID  string
 		userID int
+		err    error
 	)
 	if h.Storage.User != nil {
 		if userID, err = cookies.GetUserFromCookie(c); err != nil {
@@ -57,33 +52,22 @@ func (h *Handler) ShortenURLHandler(c *gin.Context) {
 		c.String(http.StatusInternalServerError, "Error")
 		return
 	}
-	var responseData = ShortenResponse{
-		Result: h.Config.ServerAddr + "/" + urlID,
-	}
-	var buf bytes.Buffer
-
-	err = json.NewEncoder(&buf).Encode(&responseData)
-	if err != nil {
-		c.String(http.StatusInternalServerError, "Ошибка сериализации данных")
-		return
-	}
+	var sb strings.Builder
+	sb.WriteString(h.Config.ServerAddr)
+	sb.WriteString("/")
+	sb.WriteString(urlID)
+	responseData := ShortenResponse{Result: sb.String()}
 	c.JSON(http.StatusCreated, responseData)
 }
 
 func (h *Handler) ShortenURLSHandler(c *gin.Context) {
 	var data []domain.URLS
-	body, err := c.GetRawData()
-
-	if err != nil {
-		c.String(http.StatusBadRequest, "Read error")
-		return
-	}
-
-	if err := json.Unmarshal(body, &data); err != nil {
+	if err := json.NewDecoder(c.Request.Body).Decode(&data); err != nil {
 		c.String(http.StatusBadRequest, "Read error")
 		return
 	}
 	var userID int
+	var err error
 	if h.Storage.User != nil {
 		if userID, err = cookies.GetUserFromCookie(c); err != nil {
 			c.String(http.StatusUnauthorized, "Unauthorized")
@@ -95,11 +79,16 @@ func (h *Handler) ShortenURLSHandler(c *gin.Context) {
 		h.l.Log.Error("Error when save ", zap.Error(err))
 		c.String(http.StatusInternalServerError, "Error")
 	}
-	var responseData []domain.ShortenerBatchResponse
+	responseData := make([]domain.ShortenerBatchResponse, 0, len(data))
+
 	for _, url := range data {
+		var sb strings.Builder
+		sb.WriteString(h.Config.ServerAddr)
+		sb.WriteString("/")
+		sb.WriteString(url.CorrelationID)
 		responseData = append(responseData, domain.ShortenerBatchResponse{
 			CorrelationID: url.CorrelationID,
-			ShortURL:      h.Config.ServerAddr + "/" + url.CorrelationID,
+			ShortURL:      sb.String(),
 		})
 	}
 	c.JSON(http.StatusCreated, responseData)
