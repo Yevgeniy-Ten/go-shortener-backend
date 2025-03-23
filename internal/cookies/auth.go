@@ -3,6 +3,7 @@ package cookies
 import (
 	"errors"
 	"fmt"
+	"go.uber.org/zap"
 	"net/http"
 	"shorter/internal/domain"
 	"shorter/internal/logger"
@@ -49,6 +50,7 @@ func CreateUserMiddleware(withDatabase bool, l *logger.ZapLogger, repo UserRepo)
 				c.Abort()
 				return
 			}
+			l.Log.Info("middleware: User created", zap.Int("userID", userID), zap.String("cookie", encoded))
 			c.SetCookie(CookieName, encoded, MaxAge, "/", "", false, true)
 			c.Request.Header.Set("Cookie", fmt.Sprintf("%s=%s", CookieName, encoded))
 		}
