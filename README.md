@@ -34,3 +34,10 @@ go build -o shortener *.go
 shortenertest -test.v -test.run=^TestIteration1$ -binary-path=cmd/shortener/shortener -source-path=.
 
 go tool pprof -seconds=30 http://localhost:8080/debug/pprof/heap
+
+Оптизимировано:
+1. В ShortenURLSHandler аллоцируется slice без make(), что вызывает лишние аллокации
+2. Конкатенации строк переделаны на strings.Builder для уменьшения аллокаций
+3. Убрал использование GetRawData, чтобы уменьшить аллокацию
+4. Убрал использование ответа c.String, чтобы уменьшить аллокацию Чтобы не аллоцировать string -> []byte
+
