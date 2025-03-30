@@ -1,0 +1,65 @@
+package analyzer
+
+import (
+	"go/ast"
+	"golang.org/x/tools/go/analysis"
+)
+
+// OsExitAnalyzer is an analyzer that checks for the use of os.Exit in the main function of the main package.
+var OsExitAnalyzer = &analysis.Analyzer{
+	Name: "osexit",
+	Doc:  "disallow os.Exit in main function of main package",
+	Run:  run,
+}
+
+// run is the main function of the analyzer.
+func run(pass *analysis.Pass) (interface{}, error) {
+	if pass.Pkg.Name() != "main" {
+		return nil, nil
+	}
+
+	for _, file := range pass.Files {
+		ast.Inspect(file, func(n ast.Node) bool {
+			fun, ok := n.(*ast.FuncDecl)
+			if !ok || fun.Name.Name != "main" || fun.Body == nil {
+				return true
+			}
+
+			ast.Inspect(fun.Body, func(stmt ast.Node) bool {
+				if callExpr, ok := stmt.(*ast.CallExpr); ok && isOsExit(callExpr, pass) {
+					pass.Reportf(callExpr.Pos(), "os.Exit called in main package")
+					return false // Прерываем обход
+				}
+				if deferStmt, ok := stmt.(*ast.DeferStmt); ok {
+					if deferStmt.Call == nil {
+						return true
+					}
+					if call, ok := deferStmt.Call.Fun.(*ast.CallExpr); ok && isOsExit(call, pass) {
+						pass.Reportf(deferStmt.Pos(), "os.Exit called in main package")
+						return false
+					}
+				}
+				return true
+			})
+
+			return false
+		})
+	}
+
+	return nil, nil
+}
+
+func isOsExit(callExpr *ast.CallExpr, pass *analysis.Pass) bool {
+	selExpr, ok := callExpr.Fun.(*ast.SelectorExpr)
+	if !ok {
+		return false
+	}
+
+	ident, ok := selExpr.X.(*ast.Ident)
+	if !ok || ident.Name != "os" || selExpr.Sel.Name != "Exit" {
+		return false
+	}
+
+	obj := pass.TypesInfo.Uses[selExpr.Sel]
+	return obj != nil && obj.Pkg() != nil && obj.Pkg().Path() == "os"
+}
