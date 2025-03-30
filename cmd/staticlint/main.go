@@ -38,9 +38,26 @@ import (
 	"golang.org/x/tools/go/analysis/passes/waitgroup"
 	"honnef.co/go/tools/simple"
 	"honnef.co/go/tools/staticcheck"
-	"shorter/internal/analyzer"
+	"shorter/pkg/analyzer"
+	"strings"
 )
 
+// Обернем OsExitAnalyzer, чтобы он игнорировал файлы из testdata
+func wrapOsExitAnalyzer(a *analysis.Analyzer) *analysis.Analyzer {
+	wrapped := *a
+	oldRun := a.Run
+	wrapped.Run = func(pass *analysis.Pass) (interface{}, error) {
+		if strings.Contains(pass.Pkg.Path(), "testdata") {
+			return nil, nil
+		}
+		return oldRun(pass)
+	}
+	return &wrapped
+}
+
+// Содержит все анализатора класса SA, анализатор simple и gocritic
+// Так же включены все анализаторы passes
+// go critic и staticcheck публичные анализаторы
 func main() {
 	checks := map[string]bool{
 		"SA1000": true, "SA1001": true, "SA1002": true, "SA1003": true, "SA1004": true,
@@ -98,7 +115,7 @@ func main() {
 		unusedresult.Analyzer,
 		waitgroup.Analyzer,
 		usesgenerics.Analyzer,
-		analyzer.OsExitAnalyzer,
+		wrapOsExitAnalyzer(analyzer.OsExitAnalyzer),
 		simple.Analyzers[0].Analyzer,
 		gocritic.Analyzer,
 	}
