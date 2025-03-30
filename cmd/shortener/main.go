@@ -56,14 +56,16 @@ func run() error {
 		User: nil,
 		URLS: nil,
 	}
-	if db != nil {
+	switch {
+	case db != nil:
 		s.URLS = urlstorage.New(db.URLRepo)
 		s.User = db.UsersRepo
-	} else if fileStorage != nil {
+	case fileStorage != nil:
 		s.URLS = urlstorage.New(fileStorage)
-	} else {
+	default:
 		s.URLS = urlstorage.New(nil)
 	}
+
 	defer fileStorage.Close()
 
 	h := handlers.InitHandlers(cfg.Config, s, myLogger)

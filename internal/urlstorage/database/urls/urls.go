@@ -65,9 +65,9 @@ func (d *URLRepo) Save(values domain.URLS, userID int) error {
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
-			shortURL, err := d.GetShortURL(values.URL)
-			if err != nil {
-				return err
+			shortURL, sErr := d.GetShortURL(values.URL)
+			if sErr != nil {
+				return sErr
 			}
 			return NewDuplicateError(values.URL, shortURL)
 		}
