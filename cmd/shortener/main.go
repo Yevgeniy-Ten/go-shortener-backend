@@ -21,6 +21,10 @@ import (
 	"go.uber.org/zap"
 )
 
+var buildVersion = "N/A"
+var buildDate = "N/A"
+var buildCommit = "N/A"
+
 func main() {
 	if err := run(); err != nil {
 		log.Fatal(err)
@@ -56,18 +60,23 @@ func run() error {
 		User: nil,
 		URLS: nil,
 	}
-	if db != nil {
+	switch {
+	case db != nil:
 		s.URLS = urlstorage.New(db.URLRepo)
 		s.User = db.UsersRepo
-	} else if fileStorage != nil {
+	case fileStorage != nil:
 		s.URLS = urlstorage.New(fileStorage)
-	} else {
+	default:
 		s.URLS = urlstorage.New(nil)
 	}
+
 	defer fileStorage.Close()
 
 	h := handlers.InitHandlers(cfg.Config, s, myLogger)
 	h.GET("/debug/pprof/*any", gin.WrapH(http.DefaultServeMux))
-	myLogger.Log.Info("Server started", zap.String("address", cfg.Address))
+	myLogger.Log.Info("Server started:", zap.String("address", cfg.Address))
+	myLogger.Log.Info("Build version:", zap.String("version", buildVersion))
+	myLogger.Log.Info("Build date:", zap.String("date", buildDate))
+	myLogger.Log.Info("Build commit:", zap.String("commit", buildCommit))
 	return h.Run(cfg.Address)
 }
