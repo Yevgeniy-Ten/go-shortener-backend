@@ -14,6 +14,7 @@ type Config struct {
 	FilePath    string `env:"FILE_STORAGE_PATH"` // Optional if you want to save in file
 	ServerAddr  string `env:"SERVER_URL"`        // Host for returned link with short url
 	DatabaseURL string `env:"DATABASE_DSN"`      // Optional if you want to save in database
+	HTTPs       bool   `env:"ENABLE_HTTPS"`      // Optional if you want to use https
 	Config      *handlers.Config
 }
 
@@ -53,6 +54,9 @@ func parseEnv(config *Config) error {
 	if envConfig.DatabaseURL != "" {
 		config.Config.DatabaseURL = envConfig.DatabaseURL
 	}
+	if envConfig.HTTPs {
+		config.HTTPs = true
+	}
 	return nil
 }
 
@@ -61,5 +65,6 @@ func parseFlags(config *Config) {
 	flag.StringVar(&config.Config.ServerAddr, "b", config.Config.ServerAddr, "address for link")
 	flag.StringVar(&config.FilePath, "f", config.FilePath, "path to file")
 	flag.StringVar(&config.Config.DatabaseURL, "d", config.Config.DatabaseURL, "path to file")
+	flag.BoolVar(&config.HTTPs, "s", config.HTTPs, "enable HTTPS (default: false)")
 	flag.Parse()
 }

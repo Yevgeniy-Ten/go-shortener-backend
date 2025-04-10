@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"golang.org/x/crypto/acme/autocert"
 	"log"
 	"net/http"
 	"shorter/config"
@@ -78,5 +79,19 @@ func run() error {
 	myLogger.Log.Info("Build version:", zap.String("version", buildVersion))
 	myLogger.Log.Info("Build date:", zap.String("date", buildDate))
 	myLogger.Log.Info("Build commit:", zap.String("commit", buildCommit))
-	return h.Run(cfg.Address)
+	if cfg.HTTPs {
+		manager := &autocert.Manager{
+			Prompt: autocert.AcceptTOS,
+			Cache:  autocert.DirCache("certs"),
+		}
+
+		server := &http.Server{
+			Addr:      cfg.Address,
+			Handler:   h,
+			TLSConfig: manager.TLSConfig(),
+		}
+		return server.ListenAndServeTLS("", "")
+	} else {
+		return h.Run(cfg.Address)
+	}
 }
