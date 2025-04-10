@@ -4,22 +4,25 @@ package main
 
 import (
 	"context"
+	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	_ "net/http/pprof"
 	"shorter/config"
 	"shorter/internal/domain"
 	"shorter/internal/handlers"
 	"shorter/internal/logger"
+	"shorter/internal/shutdown"
 	"shorter/internal/urlstorage"
 	"shorter/internal/urlstorage/database"
 	"shorter/internal/urlstorage/filestorage"
-
-	"github.com/gin-gonic/gin"
-
-	_ "net/http/pprof"
+	"time"
 
 	"go.uber.org/zap"
 )
+
+// TimeForShutdown is the time for shutdown
+const TimeForShutdown = 3
 
 var buildVersion = "N/A"
 var buildDate = "N/A"
@@ -78,5 +81,26 @@ func run() error {
 	myLogger.Log.Info("Build version:", zap.String("version", buildVersion))
 	myLogger.Log.Info("Build date:", zap.String("date", buildDate))
 	myLogger.Log.Info("Build commit:", zap.String("commit", buildCommit))
-	return h.Run(cfg.Address)
+	server := &http.Server{
+		Addr:    cfg.Address,
+		Handler: h,
+	}
+	if cfg.HTTPS {
+		server := &http.Server{
+			Addr:    cfg.Address,
+			Handler: h,
+		}
+		if err := server.ListenAndServeTLS("./certs/cert.pem", "./certs/key.pem"); err != nil {
+			return err
+		}
+	} else {
+		if err := server.ListenAndServe(); err != nil {
+
+			return err
+		}
+	}
+	go func() {
+		shutdown.GraceFullShutDown(server, TimeForShutdown*time.Second)
+	}()
+	return err
 }
