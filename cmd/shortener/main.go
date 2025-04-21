@@ -1,15 +1,29 @@
+// Shortener url service
+// Used for short urls
 package main
 
 import (
 	"context"
 	"log"
+	"net/http"
 	"shorter/config"
+	"shorter/internal/domain"
 	"shorter/internal/handlers"
 	"shorter/internal/logger"
-	"shorter/internal/storage"
+	"shorter/internal/urlstorage"
+	"shorter/internal/urlstorage/database"
+	"shorter/internal/urlstorage/filestorage"
+
+	"github.com/gin-gonic/gin"
+
+	_ "net/http/pprof"
 
 	"go.uber.org/zap"
 )
+
+var buildVersion = "N/A"
+var buildDate = "N/A"
+var buildCommit = "N/A"
 
 func main() {
 	if err := run(); err != nil {
@@ -26,13 +40,43 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	fileStorage, err := storage.NewShortURLStorage(cfg.FilePath)
+	ctx := context.TODO()
+	db, pgxConnectErr := database.New(ctx, myLogger, cfg.Config.DatabaseURL)
+	if pgxConnectErr != nil {
+		if cfg.Config.DatabaseURL == "" {
+			myLogger.Log.Warn("Database URL is empty")
+		} else {
+			cfg.Config.DatabaseError = true
+			myLogger.Log.Error("Failed to connect to database", zap.Error(pgxConnectErr))
+		}
+	}
+	defer db.Close(ctx)
+	fileStorage, err := filestorage.New(cfg.FilePath, myLogger)
 	if err != nil {
-		return err
+		myLogger.Log.Info("Failed to create file storage", zap.Error(err))
 	}
 	defer fileStorage.Close()
-	h := handlers.NewHandler(cfg.Config, fileStorage, myLogger)
-	r := h.GetRoutes()
-	myLogger.InfoCtx(context.TODO(), "Server started", zap.String("address", cfg.Address))
-	return r.Run(cfg.Address)
+	s := domain.Storage{
+		User: nil,
+		URLS: nil,
+	}
+	switch {
+	case db != nil:
+		s.URLS = urlstorage.New(db.URLRepo)
+		s.User = db.UsersRepo
+	case fileStorage != nil:
+		s.URLS = urlstorage.New(fileStorage)
+	default:
+		s.URLS = urlstorage.New(nil)
+	}
+
+	defer fileStorage.Close()
+
+	h := handlers.InitHandlers(cfg.Config, s, myLogger)
+	h.GET("/debug/pprof/*any", gin.WrapH(http.DefaultServeMux))
+	myLogger.Log.Info("Server started:", zap.String("address", cfg.Address))
+	myLogger.Log.Info("Build version:", zap.String("version", buildVersion))
+	myLogger.Log.Info("Build date:", zap.String("date", buildDate))
+	myLogger.Log.Info("Build commit:", zap.String("commit", buildCommit))
+	return h.Run(cfg.Address)
 }

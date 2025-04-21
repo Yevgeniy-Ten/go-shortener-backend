@@ -1,0 +1,31 @@
+name: local tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  local_tests:
+    name: Local Tests
+    runs-on: ubuntu-latest
+    container: golang:1.24
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run tests and filter because mocks and shorter/cmd are needed in testing
+        run: go test -v -coverprofile=coverage.out ./... && grep -Ev "mocks/|shorter/cmd/" coverage.out > coverage_filtered.out
+
+      - name: Show coverage
+        run: go tool cover -func=coverage_filtered.out
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage_filtered.out

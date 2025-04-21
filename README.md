@@ -32,3 +32,13 @@ git fetch template && git checkout template/main .github
 Подробнее про локальный и автоматический запуск читайте в [README автотестов](https://github.com/Yandex-Practicum/go-autotests).
 go build -o shortener *.go
 shortenertest -test.v -test.run=^TestIteration1$ -binary-path=cmd/shortener/shortener -source-path=.
+
+go tool pprof -seconds=30 http://localhost:8080/debug/pprof/heap
+
+Оптизимировано:
+1. В ShortenURLSHandler аллоцируется slice без make(), что вызывает лишние аллокации
+2. Конкатенации строк переделаны на strings.Builder для уменьшения аллокаций
+3. Убрал использование GetRawData, чтобы JSON-рендеринг стал менее затратным
+4. Убрал использование ответа c.String, чтобы уменьшить аллокацию Чтобы не аллоцировать string -> []byte
+go test -v -coverprofile=coverage.out ./... && grep -Ev "mocks/|shorter/cmd/" coverage.out > coverage_filtered.out
+go tool cover -html=coverage_filtered.out

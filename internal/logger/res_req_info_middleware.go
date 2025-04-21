@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// RequestResponseInfoMiddleware logs request and response info
 func RequestResponseInfoMiddleware(
 	ctx context.Context,
 	logger *ZapLogger) gin.HandlerFunc {

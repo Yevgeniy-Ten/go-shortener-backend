@@ -1,4 +1,4 @@
-package main
+package handlers_test
 
 import (
 	"bytes"
@@ -6,9 +6,10 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"shorter/internal/domain"
 	"shorter/internal/gzipper"
 	"shorter/internal/handlers"
-	"shorter/internal/storage"
+	"shorter/internal/urlstorage"
 	"strings"
 	"testing"
 
@@ -40,13 +41,14 @@ func TestUrlHandlers(t *testing.T) {
 			statusCodeCheck{http.StatusCreated},
 		},
 	}
-	s, err := storage.NewShortURLStorage("")
-	require.NoError(t, err)
+	s := urlstorage.New(nil)
 	h := handlers.NewHandler(
 		&handlers.Config{
 			ServerAddr: "http://localhost:8080",
 		},
-		s,
+		domain.Storage{
+			URLS: s,
+		},
 		nil,
 	)
 	r := h.CreateRouter(gzipper.RequestResponseGzipMiddleware())

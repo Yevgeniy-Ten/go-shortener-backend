@@ -1,5 +1,8 @@
 package handlers
 
+// Config struct for handlers logic
 type Config struct {
-	ServerAddr string
+	ServerAddr    string
+	DatabaseURL   string
+	DatabaseError bool
 }

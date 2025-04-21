@@ -1,3 +1,4 @@
+// Description: Logger package for logging logic with context, using zap logger
 package logger
 
 import (
@@ -8,18 +9,22 @@ import (
 
 type contextKey struct{}
 
-// Создайте уникальный экземпляр ключа
 var zapFieldsKey = contextKey{}
 
+// ZapFields is a slice of zap fields for context
 type ZapFields []zap.Field
+
+// ZapLogger base struct for logging
 type ZapLogger struct {
-	log *zap.Logger
+	Log *zap.Logger
 }
 
+// Append appends fields to the zap fields
 func (z *ZapFields) Append(fields ...zap.Field) {
 	*z = append(*z, fields...)
 }
 
+// WithContextFields adds fields to the context for log with history
 func (z *ZapLogger) WithContextFields(ctx context.Context, fields ...zap.Field) context.Context {
 	return context.WithValue(ctx, zapFieldsKey, fields)
 }
@@ -34,12 +39,17 @@ func (z *ZapLogger) withCtxFields(ctx context.Context, fields ...zap.Field) []za
 	return ctxFields
 }
 
+// InfoCtx logs info message
 func (z *ZapLogger) InfoCtx(ctx context.Context, msg string, fields ...zap.Field) {
-	z.log.Info(msg, z.withCtxFields(ctx, fields...)...)
+	z.Log.Info(msg, z.withCtxFields(ctx, fields...)...)
 }
+
+// ErrorCtx logs error message
 func (z *ZapLogger) ErrorCtx(ctx context.Context, msg string, fields ...zap.Field) {
-	z.log.Error(msg, z.withCtxFields(ctx, fields...)...)
+	z.Log.Error(msg, z.withCtxFields(ctx, fields...)...)
 }
+
+// InitLogger initializes logger
 func InitLogger() (*ZapLogger, error) {
 	cfg := zap.NewProductionConfig()
 	cfg.Level = zap.NewAtomicLevelAt(zap.InfoLevel)

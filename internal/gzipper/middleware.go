@@ -14,6 +14,7 @@ type myWriter struct {
 	gin.ResponseWriter
 }
 
+// Write writes data to the gzip writer
 func (g *myWriter) Write(data []byte) (int, error) {
 	return g.writer.Write(data)
 }
@@ -23,10 +24,12 @@ type myReader struct {
 	io.ReadCloser
 }
 
+// Read reads data from the gzip reader
 func (g *myReader) Read(p []byte) (n int, err error) {
 	return g.reader.Read(p)
 }
 
+// RequestResponseGzipMiddleware is a middleware that compresses the response body using gzip
 func RequestResponseGzipMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		contentEncodingHeader := c.GetHeader("Content-Encoding")
