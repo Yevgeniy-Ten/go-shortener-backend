@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"net"
 	"net/http"
 	"shorter/internal/cookies"
 	"shorter/internal/domain"
@@ -116,4 +117,34 @@ func (h *Handler) DeleteMyUrls(c *gin.Context) {
 		}
 	}()
 	c.Status(http.StatusAccepted)
+}
+
+func (h *Handler) GetInternalStats(c *gin.Context) {
+	if h.Config.TrustedSubnet == "" {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+
+	clientIP := c.GetHeader("X-Real-IP")
+	if clientIP == "" {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+
+	_, ipnet, err := net.ParseCIDR(h.Config.TrustedSubnet)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	if !ipnet.Contains(net.ParseIP(clientIP)) {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	data, err := h.Storage.URLS.GetStats()
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Error")
+		return
+	}
+	c.JSON(http.StatusOK, data)
 }

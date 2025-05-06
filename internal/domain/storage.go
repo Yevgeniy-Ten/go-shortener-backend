@@ -6,6 +6,7 @@ type urlStorage interface {
 	SaveBatch(urls []URLS, userID int) error
 	GetUserURLs(userID int, serverAdr string) ([]UserURLs, error)
 	DeleteURLs(correlationIDS []string, userID int) error
+	GetStats() (*Stats, error)
 }
 
 type userStorage interface {

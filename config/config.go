@@ -12,13 +12,14 @@ import (
 
 // Config struct
 type Config struct {
-	Address     string `env:"SERVER_ADDRESS" json:"base_url"`             // Address for server
-	FilePath    string `env:"FILE_STORAGE_PATH" json:"file_storage_path"` // Optional if you want to save in file
-	ServerAddr  string `env:"SERVER_URL" json:"server_address"`           // Host for returned link with short url
-	DatabaseURL string `env:"DATABASE_DSN" json:"database_dsn"`           // Optional if you want to save in database
-	HTTPS       bool   `env:"ENABLE_HTTPS" json:"enable_https"`           // Optional if you want to use https
-	CfgPath     string `env:"CONFIG"`                                     // Optional if you want to config.json
-	Config      *handlers.Config
+	Address       string `env:"SERVER_ADDRESS" json:"base_url"`             // Address for server
+	FilePath      string `env:"FILE_STORAGE_PATH" json:"file_storage_path"` // Optional if you want to save in file
+	ServerAddr    string `env:"SERVER_URL" json:"server_address"`           // Host for returned link with short url
+	DatabaseURL   string `env:"DATABASE_DSN" json:"database_dsn"`           // Optional if you want to save in database
+	HTTPS         bool   `env:"ENABLE_HTTPS" json:"enable_https"`           // Optional if you want to use https
+	CfgPath       string `env:"CONFIG"`                                     // Optional if you want to config.json
+	TrustedSubnet string `env:"TRUSTED_SUBNET" json:"trusted_subnet"`       // Trusted subnet for internal stats
+	Config        *handlers.Config
 }
 
 // NewConfig creates a new config
@@ -66,6 +67,10 @@ func parseEnv(config *Config) error {
 	if envConfig.CfgPath != "" {
 		config.CfgPath = envConfig.CfgPath
 	}
+	if envConfig.TrustedSubnet != "" {
+		config.TrustedSubnet = envConfig.TrustedSubnet
+		config.Config.TrustedSubnet = envConfig.TrustedSubnet
+	}
 	return nil
 }
 
@@ -77,23 +82,15 @@ func parseFlags(config *Config) {
 	flag.BoolVar(&config.HTTPS, "s", config.HTTPS, "enable HTTPS (default: false)")
 	flag.StringVar(&config.CfgPath, "c", config.CfgPath, "Config path default empty")
 	flag.StringVar(&config.CfgPath, "config", config.CfgPath, "Config path default empty long version")
+	flag.StringVar(&config.TrustedSubnet, "t", config.TrustedSubnet, "trusted subnet for internal stats")
 	flag.Parse()
+
+	if config.TrustedSubnet != "" {
+		config.Config.TrustedSubnet = config.TrustedSubnet
+	}
 }
 
-func parseJSON(config *Config) error {
-	if config.CfgPath == "" {
-		return nil
-	}
-	file, err := os.Open(config.CfgPath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	var jsonConf Config
-	decoder := json.NewDecoder(file)
-	if err := decoder.Decode(&jsonConf); err != nil {
-		return err
-	}
+func applyJSONConfig(config, jsonConf *Config) {
 	if jsonConf.ServerAddr != "" && config.Config.ServerAddr == "" {
 		config.Config.ServerAddr = jsonConf.ServerAddr
 	}
@@ -109,5 +106,28 @@ func parseJSON(config *Config) error {
 	if jsonConf.HTTPS && !config.HTTPS {
 		config.HTTPS = jsonConf.HTTPS
 	}
+	if jsonConf.TrustedSubnet != "" && config.TrustedSubnet == "" {
+		config.TrustedSubnet = jsonConf.TrustedSubnet
+		config.Config.TrustedSubnet = jsonConf.TrustedSubnet
+	}
+}
+
+func parseJSON(config *Config) error {
+	if config.CfgPath == "" {
+		return nil
+	}
+	file, err := os.Open(config.CfgPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	var jsonConf Config
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&jsonConf); err != nil {
+		return err
+	}
+
+	applyJSONConfig(config, &jsonConf)
 	return nil
 }

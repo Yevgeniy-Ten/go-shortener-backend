@@ -4,7 +4,6 @@ package main
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -17,6 +16,8 @@ import (
 	"shorter/internal/urlstorage/database"
 	"shorter/internal/urlstorage/filestorage"
 	"time"
+
+	"github.com/gin-gonic/gin"
 
 	"go.uber.org/zap"
 )

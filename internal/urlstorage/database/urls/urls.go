@@ -139,3 +139,25 @@ func (d *URLRepo) GetInitialData() (domain.URLStorage, error) {
 	d.logger.Log.Warn("GetInitialData is not implemented")
 	return nil, fmt.Errorf("not implemented")
 }
+
+// GetStats is a query to get the stats
+const GetStats = "SELECT COUNT(*) FROM urls"
+
+// GetUsers is a query to get the users
+const GetUsers = "SELECT COUNT(*) FROM users"
+
+
+// GetStats returns the stats
+func (d *URLRepo) GetStats() (*domain.Stats, error) {
+	var urls int
+	var users int
+	err := d.conn.QueryRow(context.Background(), GetStats).Scan(&urls)
+	if err != nil {
+		return nil, err
+	}
+	err = d.conn.QueryRow(context.Background(), GetUsers).Scan(&users)
+	if err != nil {
+		return nil, err
+	}
+	return &domain.Stats{URLs: urls, Users: users}, nil
+}

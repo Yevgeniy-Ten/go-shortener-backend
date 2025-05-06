@@ -30,3 +30,9 @@ type ResponseError struct {
 
 // URLStorage is a simple map for save urls
 type URLStorage map[string]string
+
+// Stats is a struct for stats
+type Stats struct {
+	URLs  int `json:"urls"`
+	Users int `json:"users"`
+}

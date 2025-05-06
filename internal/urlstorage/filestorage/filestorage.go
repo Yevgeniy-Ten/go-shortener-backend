@@ -109,3 +109,8 @@ func (f *FileStorage) DeleteURLs(_ []string, _ int) error {
 	f.logger.Log.Warn("DeleteURLs is not implemented")
 	return errors.New("not implemented")
 }
+
+// GetStats returns the stats
+func (f *FileStorage) GetStats() (*domain.Stats, error) {
+	return nil, errors.New("not implemented")
+}

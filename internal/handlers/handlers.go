@@ -62,5 +62,7 @@ func (h *Handler) CreateRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 	r.GET("/:id", h.GetHandler)
 	r.GET("/api/user/urls", cookies.CreateUserMiddleware(withDatabase, h.l, h.Storage.User), h.GetUserUrls)
 	r.DELETE("/api/user/urls", h.DeleteMyUrls)
+	r.GET("/api/internal/stats", h.GetInternalStats)
 	return r
 }
+
