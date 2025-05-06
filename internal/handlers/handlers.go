@@ -65,4 +65,3 @@ func (h *Handler) CreateRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 	r.GET("/api/internal/stats", h.GetInternalStats)
 	return r
 }
-

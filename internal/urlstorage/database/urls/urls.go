@@ -146,7 +146,6 @@ const GetStats = "SELECT COUNT(*) FROM urls"
 // GetUsers is a query to get the users
 const GetUsers = "SELECT COUNT(*) FROM users"
 
-
 // GetStats returns the stats
 func (d *URLRepo) GetStats() (*domain.Stats, error) {
 	var urls int
