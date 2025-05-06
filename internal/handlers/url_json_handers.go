@@ -119,6 +119,7 @@ func (h *Handler) DeleteMyUrls(c *gin.Context) {
 	c.Status(http.StatusAccepted)
 }
 
+// GetInternalStats returns the stats
 func (h *Handler) GetInternalStats(c *gin.Context) {
 	if h.Config.TrustedSubnet == "" {
 		c.AbortWithStatus(http.StatusForbidden)
