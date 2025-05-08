@@ -601,6 +601,86 @@ func (x *GetInternalStatsResponse) GetUsers() int64 {
 	return 0
 }
 
+type CreateUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateUserRequest) Reset() {
+	*x = CreateUserRequest{}
+	mi := &file_internal_handlers_grpc_shortener_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateUserRequest) ProtoMessage() {}
+
+func (x *CreateUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_handlers_grpc_shortener_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateUserRequest.ProtoReflect.Descriptor instead.
+func (*CreateUserRequest) Descriptor() ([]byte, []int) {
+	return file_internal_handlers_grpc_shortener_proto_rawDescGZIP(), []int{13}
+}
+
+type CreateUserResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        int32                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateUserResponse) Reset() {
+	*x = CreateUserResponse{}
+	mi := &file_internal_handlers_grpc_shortener_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateUserResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateUserResponse) ProtoMessage() {}
+
+func (x *CreateUserResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_handlers_grpc_shortener_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateUserResponse.ProtoReflect.Descriptor instead.
+func (*CreateUserResponse) Descriptor() ([]byte, []int) {
+	return file_internal_handlers_grpc_shortener_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *CreateUserResponse) GetUserId() int32 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
 var File_internal_handlers_grpc_shortener_proto protoreflect.FileDescriptor
 
 const file_internal_handlers_grpc_shortener_proto_rawDesc = "" +
@@ -634,7 +714,10 @@ const file_internal_handlers_grpc_shortener_proto_rawDesc = "" +
 	"\x17GetInternalStatsRequest\"D\n" +
 	"\x18GetInternalStatsResponse\x12\x12\n" +
 	"\x04urls\x18\x01 \x01(\x03R\x04urls\x12\x14\n" +
-	"\x05users\x18\x02 \x01(\x03R\x05users2\x8c\x04\n" +
+	"\x05users\x18\x02 \x01(\x03R\x05users\"\x13\n" +
+	"\x11CreateUserRequest\"-\n" +
+	"\x12CreateUserResponse\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x05R\x06userId2\xd7\x04\n" +
 	"\tShortener\x12I\n" +
 	"\n" +
 	"ShortenURL\x12\x1c.shortener.ShortenURLRequest\x1a\x1d.shortener.ShortenURLResponse\x12[\n" +
@@ -642,7 +725,9 @@ const file_internal_handlers_grpc_shortener_proto_rawDesc = "" +
 	"\x0eGetOriginalURL\x12 .shortener.GetOriginalURLRequest\x1a!.shortener.GetOriginalURLResponse\x12L\n" +
 	"\vGetUserURLs\x12\x1d.shortener.GetUserURLsRequest\x1a\x1e.shortener.GetUserURLsResponse\x12U\n" +
 	"\x0eDeleteUserURLs\x12 .shortener.DeleteUserURLsRequest\x1a!.shortener.DeleteUserURLsResponse\x12[\n" +
-	"\x10GetInternalStats\x12\".shortener.GetInternalStatsRequest\x1a#.shortener.GetInternalStatsResponseB%Z#shorter/internal/handlers/grpc;grpcb\x06proto3"
+	"\x10GetInternalStats\x12\".shortener.GetInternalStatsRequest\x1a#.shortener.GetInternalStatsResponse\x12I\n" +
+	"\n" +
+	"CreateUser\x12\x1c.shortener.CreateUserRequest\x1a\x1d.shortener.CreateUserResponseB%Z#shorter/internal/handlers/grpc;grpcb\x06proto3"
 
 var (
 	file_internal_handlers_grpc_shortener_proto_rawDescOnce sync.Once
@@ -656,7 +741,7 @@ func file_internal_handlers_grpc_shortener_proto_rawDescGZIP() []byte {
 	return file_internal_handlers_grpc_shortener_proto_rawDescData
 }
 
-var file_internal_handlers_grpc_shortener_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_internal_handlers_grpc_shortener_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_internal_handlers_grpc_shortener_proto_goTypes = []any{
 	(*ShortenURLRequest)(nil),        // 0: shortener.ShortenURLRequest
 	(*ShortenURLResponse)(nil),       // 1: shortener.ShortenURLResponse
@@ -671,6 +756,8 @@ var file_internal_handlers_grpc_shortener_proto_goTypes = []any{
 	(*DeleteUserURLsResponse)(nil),   // 10: shortener.DeleteUserURLsResponse
 	(*GetInternalStatsRequest)(nil),  // 11: shortener.GetInternalStatsRequest
 	(*GetInternalStatsResponse)(nil), // 12: shortener.GetInternalStatsResponse
+	(*CreateUserRequest)(nil),        // 13: shortener.CreateUserRequest
+	(*CreateUserResponse)(nil),       // 14: shortener.CreateUserResponse
 }
 var file_internal_handlers_grpc_shortener_proto_depIdxs = []int32{
 	8,  // 0: shortener.GetUserURLsResponse.urls:type_name -> shortener.UserURL
@@ -680,14 +767,16 @@ var file_internal_handlers_grpc_shortener_proto_depIdxs = []int32{
 	6,  // 4: shortener.Shortener.GetUserURLs:input_type -> shortener.GetUserURLsRequest
 	9,  // 5: shortener.Shortener.DeleteUserURLs:input_type -> shortener.DeleteUserURLsRequest
 	11, // 6: shortener.Shortener.GetInternalStats:input_type -> shortener.GetInternalStatsRequest
-	1,  // 7: shortener.Shortener.ShortenURL:output_type -> shortener.ShortenURLResponse
-	3,  // 8: shortener.Shortener.ShortenURLsBatch:output_type -> shortener.ShortenURLsBatchResponse
-	5,  // 9: shortener.Shortener.GetOriginalURL:output_type -> shortener.GetOriginalURLResponse
-	7,  // 10: shortener.Shortener.GetUserURLs:output_type -> shortener.GetUserURLsResponse
-	10, // 11: shortener.Shortener.DeleteUserURLs:output_type -> shortener.DeleteUserURLsResponse
-	12, // 12: shortener.Shortener.GetInternalStats:output_type -> shortener.GetInternalStatsResponse
-	7,  // [7:13] is the sub-list for method output_type
-	1,  // [1:7] is the sub-list for method input_type
+	13, // 7: shortener.Shortener.CreateUser:input_type -> shortener.CreateUserRequest
+	1,  // 8: shortener.Shortener.ShortenURL:output_type -> shortener.ShortenURLResponse
+	3,  // 9: shortener.Shortener.ShortenURLsBatch:output_type -> shortener.ShortenURLsBatchResponse
+	5,  // 10: shortener.Shortener.GetOriginalURL:output_type -> shortener.GetOriginalURLResponse
+	7,  // 11: shortener.Shortener.GetUserURLs:output_type -> shortener.GetUserURLsResponse
+	10, // 12: shortener.Shortener.DeleteUserURLs:output_type -> shortener.DeleteUserURLsResponse
+	12, // 13: shortener.Shortener.GetInternalStats:output_type -> shortener.GetInternalStatsResponse
+	14, // 14: shortener.Shortener.CreateUser:output_type -> shortener.CreateUserResponse
+	8,  // [8:15] is the sub-list for method output_type
+	1,  // [1:8] is the sub-list for method input_type
 	1,  // [1:1] is the sub-list for extension type_name
 	1,  // [1:1] is the sub-list for extension extendee
 	0,  // [0:1] is the sub-list for field type_name
@@ -704,7 +793,7 @@ func file_internal_handlers_grpc_shortener_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_internal_handlers_grpc_shortener_proto_rawDesc), len(file_internal_handlers_grpc_shortener_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

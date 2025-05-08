@@ -10,6 +10,7 @@ import (
 	"shorter/config"
 	"shorter/internal/domain"
 	"shorter/internal/handlers"
+	grpcserver "shorter/internal/handlers/grpc"
 	"shorter/internal/logger"
 	"shorter/internal/shutdown"
 	"shorter/internal/urlstorage"
@@ -100,6 +101,12 @@ func run() error {
 			return err
 		}
 	}
+	go func() {
+		addr := ":50051" // или из конфига, если хочешь
+		if err := grpcserver.RunGRPCServer(addr, s, myLogger, cfg.Config); err != nil {
+			myLogger.Log.Error("gRPC server error", zap.Error(err))
+		}
+	}()
 	go func() {
 		shutdown.GraceFullShutDown(server, TimeForShutdown*time.Second)
 	}()

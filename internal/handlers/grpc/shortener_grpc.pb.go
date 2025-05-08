@@ -25,6 +25,7 @@ const (
 	Shortener_GetUserURLs_FullMethodName      = "/shortener.Shortener/GetUserURLs"
 	Shortener_DeleteUserURLs_FullMethodName   = "/shortener.Shortener/DeleteUserURLs"
 	Shortener_GetInternalStats_FullMethodName = "/shortener.Shortener/GetInternalStats"
+	Shortener_CreateUser_FullMethodName       = "/shortener.Shortener/CreateUser"
 )
 
 // ShortenerClient is the client API for Shortener service.
@@ -37,6 +38,7 @@ type ShortenerClient interface {
 	GetUserURLs(ctx context.Context, in *GetUserURLsRequest, opts ...grpc.CallOption) (*GetUserURLsResponse, error)
 	DeleteUserURLs(ctx context.Context, in *DeleteUserURLsRequest, opts ...grpc.CallOption) (*DeleteUserURLsResponse, error)
 	GetInternalStats(ctx context.Context, in *GetInternalStatsRequest, opts ...grpc.CallOption) (*GetInternalStatsResponse, error)
+	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
 }
 
 type shortenerClient struct {
@@ -107,6 +109,16 @@ func (c *shortenerClient) GetInternalStats(ctx context.Context, in *GetInternalS
 	return out, nil
 }
 
+func (c *shortenerClient) CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateUserResponse)
+	err := c.cc.Invoke(ctx, Shortener_CreateUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ShortenerServer is the server API for Shortener service.
 // All implementations must embed UnimplementedShortenerServer
 // for forward compatibility.
@@ -117,6 +129,7 @@ type ShortenerServer interface {
 	GetUserURLs(context.Context, *GetUserURLsRequest) (*GetUserURLsResponse, error)
 	DeleteUserURLs(context.Context, *DeleteUserURLsRequest) (*DeleteUserURLsResponse, error)
 	GetInternalStats(context.Context, *GetInternalStatsRequest) (*GetInternalStatsResponse, error)
+	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
 	mustEmbedUnimplementedShortenerServer()
 }
 
@@ -144,6 +157,9 @@ func (UnimplementedShortenerServer) DeleteUserURLs(context.Context, *DeleteUserU
 }
 func (UnimplementedShortenerServer) GetInternalStats(context.Context, *GetInternalStatsRequest) (*GetInternalStatsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInternalStats not implemented")
+}
+func (UnimplementedShortenerServer) CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
 }
 func (UnimplementedShortenerServer) mustEmbedUnimplementedShortenerServer() {}
 func (UnimplementedShortenerServer) testEmbeddedByValue()                   {}
@@ -274,6 +290,24 @@ func _Shortener_GetInternalStats_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Shortener_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ShortenerServer).CreateUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Shortener_CreateUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ShortenerServer).CreateUser(ctx, req.(*CreateUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Shortener_ServiceDesc is the grpc.ServiceDesc for Shortener service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -304,6 +338,10 @@ var Shortener_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetInternalStats",
 			Handler:    _Shortener_GetInternalStats_Handler,
+		},
+		{
+			MethodName: "CreateUser",
+			Handler:    _Shortener_CreateUser_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
