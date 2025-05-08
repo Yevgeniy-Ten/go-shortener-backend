@@ -144,3 +144,12 @@ func (mr *MockuserStorageMockRecorder) Create() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockuserStorage)(nil).Create))
 }
+
+// GetStats mocks base method.
+func (m *MockurlStorage) GetStats() (*domain.Stats, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetStats")
+	ret0, _ := ret[0].(*domain.Stats)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}

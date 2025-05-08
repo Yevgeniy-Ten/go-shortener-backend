@@ -7,8 +7,12 @@ import (
 	"shorter/internal/domain"
 	"shorter/internal/logger"
 
+	"context"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/securecookie"
+	"google.golang.org/grpc/metadata"
 )
 
 // mockgen -source=internal/cookies/auth.go -destination=internal/cookies/mocks/mock_user_service.go -package=mocks
@@ -82,6 +86,23 @@ func GetUserFromCookie(c *gin.Context) (int, error) {
 	var userID int
 	if err := s.Decode(CookieName, userCookie, &userID); err != nil {
 		return 0, errors.New("error decoding cookie")
+	}
+	return userID, nil
+}
+
+func GetUserIDFromMetadata(ctx context.Context) (int, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return 0, errors.New("no metadata")
+	}
+	tokens := md["token"]
+	if len(tokens) == 0 {
+		return 0, errors.New("no token")
+	}
+	// токен — это строка с userID
+	userID, err := strconv.Atoi(tokens[0])
+	if err != nil {
+		return 0, errors.New("invalid token")
 	}
 	return userID, nil
 }
