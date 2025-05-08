@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package shortener;
+option go_package = "shorter/internal/handlers/grpc;grpc";
+
+service Shortener {
+  rpc ShortenURL (ShortenURLRequest) returns (ShortenURLResponse);
+  rpc ShortenURLsBatch (ShortenURLsBatchRequest) returns (ShortenURLsBatchResponse);
+  rpc GetOriginalURL (GetOriginalURLRequest) returns (GetOriginalURLResponse);
+  rpc GetUserURLs (GetUserURLsRequest) returns (GetUserURLsResponse);
+  rpc DeleteUserURLs (DeleteUserURLsRequest) returns (DeleteUserURLsResponse);
+  rpc GetInternalStats (GetInternalStatsRequest) returns (GetInternalStatsResponse);
+}
+
+message ShortenURLRequest {
+  string original_url = 1;
+}
+
+message ShortenURLResponse {
+  string short_url = 1;
+}
+
+message ShortenURLsBatchRequest {
+  repeated string original_urls = 1;
+}
+
+message ShortenURLsBatchResponse {
+  repeated string short_urls = 1;
+}
+
+message GetOriginalURLRequest {
+  string short_url = 1;
+}
+
+message GetOriginalURLResponse {
+  string original_url = 1;
+}
+
+message GetUserURLsRequest {
+  string user_id = 1;
+}
+
+message GetUserURLsResponse {
+  repeated UserURL urls = 1;
+}
+
+message UserURL {
+  string short_url = 1;
+  string original_url = 2;
+}
+
+message DeleteUserURLsRequest {
+  repeated string short_urls = 1;
+}
+
+message DeleteUserURLsResponse {
+  bool success = 1;
+}
+
+message GetInternalStatsRequest {}
+
+message GetInternalStatsResponse {
+  int64 urls = 1;
+  int64 users = 2;
+}
