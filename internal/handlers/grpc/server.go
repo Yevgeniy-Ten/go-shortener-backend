@@ -10,6 +10,7 @@ import (
 	"shorter/internal/logger"
 	"shorter/internal/urlstorage/database/urls"
 	"shorter/pkg"
+	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -25,11 +26,52 @@ type ShortenerGRPCServer struct {
 	Config  *handlers.Config
 }
 
-func (s *ShortenerGRPCServer) ShortenURL(ctx context.Context, req *ShortenURLRequest) (*ShortenURLResponse, error) {
-	userID, err := cookies.GetUserIDFromMetadata(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "unauthorized: "+err.Error())
+type ctxKeyUserID struct{}
+
+func UserIDInterceptor() grpc.UnaryServerInterceptor {
+	return func(
+		ctx context.Context,
+		req interface{},
+		info *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (interface{}, error) {
+		userID, err := cookies.GetUserIDFromMetadata(ctx)
+		if err != nil {
+			return nil, status.Error(codes.Unauthenticated, "unauthorized: "+err.Error())
+		}
+		ctx = context.WithValue(ctx, ctxKeyUserID{}, userID)
+		return handler(ctx, req)
 	}
+}
+
+func LoggingInterceptor(logger *logger.ZapLogger) grpc.UnaryServerInterceptor {
+	return func(
+		ctx context.Context,
+		req interface{},
+		info *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (interface{}, error) {
+		start := time.Now()
+		resp, err := handler(ctx, req)
+		latency := time.Since(start)
+		code := codes.OK
+		if err != nil {
+			st, ok := status.FromError(err)
+			if ok {
+				code = st.Code()
+			}
+		}
+		logger.InfoCtx(ctx, "gRPC Request",
+			zap.String("method", info.FullMethod),
+			zap.String("code", code.String()),
+			zap.Duration("latency", latency),
+		)
+		return resp, err
+	}
+}
+
+func (s *ShortenerGRPCServer) ShortenURL(ctx context.Context, req *ShortenURLRequest) (*ShortenURLResponse, error) {
+	userID := ctx.Value(ctxKeyUserID{}).(int)
 	if !pkg.ValidateURL(req.OriginalUrl) {
 		return nil, status.Error(codes.InvalidArgument, "Некорректный ShortURL.")
 	}
@@ -46,10 +88,7 @@ func (s *ShortenerGRPCServer) ShortenURL(ctx context.Context, req *ShortenURLReq
 }
 
 func (s *ShortenerGRPCServer) ShortenURLsBatch(ctx context.Context, req *ShortenURLsBatchRequest) (*ShortenURLsBatchResponse, error) {
-	userID, err := cookies.GetUserIDFromMetadata(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "unauthorized: "+err.Error())
-	}
+	userID := ctx.Value(ctxKeyUserID{}).(int)
 	if len(req.OriginalUrls) == 0 {
 		return nil, status.Error(codes.InvalidArgument, "empty batch")
 	}
@@ -60,7 +99,7 @@ func (s *ShortenerGRPCServer) ShortenURLsBatch(ctx context.Context, req *Shorten
 		}
 		urlsForSave = append(urlsForSave, domain.URLS{CorrelationID: "", URL: url})
 	}
-	err = s.Storage.URLS.SaveBatch(urlsForSave, userID)
+	err := s.Storage.URLS.SaveBatch(urlsForSave, userID)
 	if err != nil {
 		s.Log.Log.Error("gRPC: Error when save batch", zap.Error(err))
 		return nil, status.Error(codes.Internal, "internal error")
@@ -89,10 +128,7 @@ func (s *ShortenerGRPCServer) GetOriginalURL(ctx context.Context, req *GetOrigin
 }
 
 func (s *ShortenerGRPCServer) GetUserURLs(ctx context.Context, req *GetUserURLsRequest) (*GetUserURLsResponse, error) {
-	userID, err := cookies.GetUserIDFromMetadata(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "unauthorized: "+err.Error())
-	}
+	userID := ctx.Value(ctxKeyUserID{}).(int)
 	urls, err := s.Storage.URLS.GetUserURLs(userID, s.Config.ServerAddr)
 	if err != nil {
 		s.Log.Log.Error("gRPC: Error when get user urls", zap.Error(err))
@@ -112,14 +148,11 @@ func (s *ShortenerGRPCServer) GetUserURLs(ctx context.Context, req *GetUserURLsR
 }
 
 func (s *ShortenerGRPCServer) DeleteUserURLs(ctx context.Context, req *DeleteUserURLsRequest) (*DeleteUserURLsResponse, error) {
-	userID, err := cookies.GetUserIDFromMetadata(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "unauthorized: "+err.Error())
-	}
+	userID := ctx.Value(ctxKeyUserID{}).(int)
 	if len(req.ShortUrls) == 0 {
 		return nil, status.Error(codes.InvalidArgument, "no urls to delete")
 	}
-	err = s.Storage.URLS.DeleteURLs(req.ShortUrls, userID)
+	err := s.Storage.URLS.DeleteURLs(req.ShortUrls, userID)
 	if err != nil {
 		s.Log.Log.Error("gRPC: Error when delete urls", zap.Error(err))
 		return &DeleteUserURLsResponse{Success: false}, status.Error(codes.Internal, "internal error")
@@ -128,28 +161,6 @@ func (s *ShortenerGRPCServer) DeleteUserURLs(ctx context.Context, req *DeleteUse
 }
 
 func (s *ShortenerGRPCServer) GetInternalStats(ctx context.Context, req *GetInternalStatsRequest) (*GetInternalStatsResponse, error) {
-	if s.Config.TrustedSubnet == "" {
-		return nil, status.Error(codes.PermissionDenied, "no trusted subnet configured")
-	}
-
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return nil, status.Error(codes.PermissionDenied, "no metadata")
-	}
-	ips := md["x-real-ip"]
-	if len(ips) == 0 {
-		return nil, status.Error(codes.PermissionDenied, "no X-Real-IP header")
-	}
-	clientIP := ips[0]
-
-	_, ipnet, err := net.ParseCIDR(s.Config.TrustedSubnet)
-	if err != nil {
-		return nil, status.Error(codes.Internal, "invalid trusted subnet")
-	}
-	if !ipnet.Contains(net.ParseIP(clientIP)) {
-		return nil, status.Error(codes.PermissionDenied, "forbidden")
-	}
-
 	stats, err := s.Storage.URLS.GetStats()
 	if err != nil {
 		s.Log.Log.Error("gRPC: Error when get stats", zap.Error(err))
@@ -166,7 +177,13 @@ func RunGRPCServer(addr string, storage domain.Storage, log *logger.ZapLogger, c
 	if err != nil {
 		return err
 	}
-	s := grpc.NewServer()
+	s := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			LoggingInterceptor(log),
+			UserIDInterceptor(),
+			TrustedSubnetInterceptor(config.TrustedSubnet),
+		),
+	)
 	RegisterShortenerServer(s, &ShortenerGRPCServer{
 		Storage: storage,
 		Log:     log,
@@ -186,4 +203,36 @@ func (s *ShortenerGRPCServer) CreateUser(ctx context.Context, req *CreateUserReq
 		return nil, status.Error(codes.Internal, "failed to create user")
 	}
 	return &CreateUserResponse{UserId: int32(userID)}, nil
+}
+
+func TrustedSubnetInterceptor(trustedSubnet string) grpc.UnaryServerInterceptor {
+	return func(
+		ctx context.Context,
+		req interface{},
+		info *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (interface{}, error) {
+		if info.FullMethod == "/shortener.Shortener/GetInternalStats" {
+			if trustedSubnet == "" {
+				return nil, status.Error(codes.PermissionDenied, "no trusted subnet configured")
+			}
+			md, ok := metadata.FromIncomingContext(ctx)
+			if !ok {
+				return nil, status.Error(codes.PermissionDenied, "no metadata")
+			}
+			ips := md["x-real-ip"]
+			if len(ips) == 0 {
+				return nil, status.Error(codes.PermissionDenied, "no X-Real-IP header")
+			}
+			clientIP := ips[0]
+			_, ipnet, err := net.ParseCIDR(trustedSubnet)
+			if err != nil {
+				return nil, status.Error(codes.Internal, "invalid trusted subnet")
+			}
+			if !ipnet.Contains(net.ParseIP(clientIP)) {
+				return nil, status.Error(codes.PermissionDenied, "forbidden")
+			}
+		}
+		return handler(ctx, req)
+	}
 }
