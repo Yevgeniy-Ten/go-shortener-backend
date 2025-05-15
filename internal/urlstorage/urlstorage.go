@@ -15,6 +15,7 @@ type repository interface {
 	SaveBatch(ctx context.Context, values []domain.URLS, userID int) error
 	GetUserURLs(userID int, serverAdr string) ([]domain.UserURLs, error)
 	DeleteURLs(correlationIDS []string, userID int) error
+	GetStats() (*domain.Stats, error)
 }
 
 // ShortURLStorage is a struct for storage
@@ -97,4 +98,12 @@ func (s *ShortURLStorage) SaveBatch(urls []domain.URLS, userID int) error {
 		s.storage[value.CorrelationID] = value.URL
 	}
 	return nil
+}
+
+// GetStats returns the stats
+func (s *ShortURLStorage) GetStats() (*domain.Stats, error) {
+	if s.db != nil {
+		return s.db.GetStats()
+	}
+	return nil, errors.New("not implemented")
 }
